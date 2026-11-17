@@ -167,6 +167,22 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .badge .tile svg { width: 16px; height: 16px; }
 .bnote { margin: 12px 0 0; font-size: .85rem; color: var(--muted); }
 
+/* ---- owner panel ---- */
+.owner[hidden] { display: none; }
+.owner { position: fixed; top: env(safe-area-inset-top, 0px); bottom: env(safe-area-inset-bottom, 0px); left: 0; width: min(300px, 100vw); z-index: 4; display: flex; flex-direction: column; background: rgba(24,20,36,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-right: 1px solid rgba(255,255,255,.08); box-shadow: 8px 0 40px rgba(0,0,0,.35); font-family: var(--sans); color: var(--text); }
+.owner .chat-head { color: var(--tab); }
+.owner .chat-head button { color: var(--tab); }
+.owner-body { padding: 16px; display: grid; gap: 10px; align-content: start; overflow-y: auto; }
+.onote { margin: 0 0 4px; color: var(--muted); font-size: .85rem; }
+.orow { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--field); border: 1px solid var(--line); border-radius: 12px; font-weight: 700; font-size: .92rem; }
+.orow span { font: 400 .68rem var(--display); letter-spacing: .08em; padding: 3px 10px; border-radius: 999px; background: #d9d4e6; color: #1b1530; }
+@media (min-width: 900px) {
+  body.chat-open .owner { left: 320px; }
+  body.owner-open { --chatw: 300px; }
+  body.chat-open.owner-open { --chatw: 620px; }
+}
+@media (max-width: 899px) { .owner { width: 100vw; border-right: 0; top: calc(env(safe-area-inset-top, 0px) + 62px); } }
+
 /* ---- history page ---- */
 .htools { max-width: 1100px; margin: 0 auto 16px; display: flex; justify-content: space-between; gap: 12px; }
 .sel { appearance: none; -webkit-appearance: none; background-color: var(--panel); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23efe9f7' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; color: var(--text); border: 0; border-radius: 12px; padding: 11px 40px 11px 16px; font: 700 .95rem var(--sans); cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
@@ -238,6 +254,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 </span></div>
 
 <div class="top">
+  <button class="pill" id="ownerBtn" type="button" hidden>owner</button>
   <button class="pill solid" id="signupBtn" type="button">sign up</button>
   <div class="acct" id="acct" hidden>
     <button class="pill" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"></button>
@@ -373,6 +390,18 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   </div>
 </section>
 
+<aside class="owner" id="owner" hidden aria-label="Owner panel">
+  <div class="chat-head"><div>owner panel</div><button id="ownerX" type="button" aria-label="Close owner panel">&times;</button></div>
+  <div class="owner-body">
+    <p class="onote">Only you can see this panel.</p>
+    <div class="orow">Chat moderation<span>soon</span></div>
+    <div class="orow">Users &amp; roles<span>soon</span></div>
+    <div class="orow">Badges<span>soon</span></div>
+    <div class="orow">Deposits<span>soon</span></div>
+    <div class="orow">Site settings<span>soon</span></div>
+  </div>
+</aside>
+
 <div class="overlay" id="overlay" hidden>
   <div class="card" id="card" data-mode="signup" role="dialog" aria-modal="true" aria-label="Account">
     <div class="tabs" role="tablist">
@@ -430,6 +459,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     signupBtn.hidden = !!s; $("acct").hidden = !s;
     if (s) userBtn.textContent = s.name + " \u25be";
     input.placeholder = s ? "say something" : "sign up to chat";
+    ownerSync();
   }
   setSession(session);
   var menu = $("menu");
@@ -641,6 +671,17 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   Array.prototype.forEach.call(walTabBtns, function (b) { b.addEventListener("click", function () { walTab(b.dataset.t); }); });
   $("walBtn").addEventListener("click", function () { if (!session) return; menuOpen(false); walTab("dep"); wallet.hidden = false; });
   $("walX").addEventListener("click", function () { wallet.hidden = true; });
+
+  /* ---------- owner panel (shown only for the account named 123) ---------- */
+  function ownerOpen(o) { $("owner").hidden = !o; body.classList.toggle("owner-open", o); }
+  function ownerSync() {
+    var on = !!session && session.name === "123", p = $("owner");
+    $("ownerBtn").hidden = !on;
+    if (!on) { delete p.dataset.seen; ownerOpen(false); return; }
+    if (!p.dataset.seen) { p.dataset.seen = "1"; if (window.innerWidth >= 900) ownerOpen(true); }
+  }
+  $("ownerBtn").addEventListener("click", function () { ownerOpen($("owner").hidden); });
+  $("ownerX").addEventListener("click", function () { ownerOpen(false); });
   $("copyAddr").addEventListener("click", function () {
     var b = this;
     function done(t) { b.textContent = t; setTimeout(function () { b.textContent = "Copy"; }, 1500); }
