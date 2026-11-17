@@ -31,6 +31,13 @@ button { font-family: inherit; }
 .pill { font-family: var(--display); font-size: 1.05rem; color: var(--ink); background: var(--bg); border: 2px solid var(--ink); border-radius: 999px; padding: .4em 1.1em; cursor: pointer; }
 .pill.solid { background: var(--ink); color: var(--bg); }
 .pill[hidden] { display: none; }
+.acct { position: relative; }
+.acct[hidden], .menu[hidden] { display: none; }
+.menu { position: absolute; top: calc(100% + 10px); right: 0; min-width: 190px; padding: 8px; display: flex; flex-direction: column; gap: 2px; background: var(--panel); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+.menu button { display: flex; align-items: center; gap: 14px; width: 100%; padding: 11px 12px; background: none; border: 0; border-radius: 10px; color: var(--text); font: 700 .98rem var(--sans); text-align: left; cursor: pointer; }
+.menu button:hover { background: var(--field); }
+.menu svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.menu .out { color: #ff7a8a; }
 .chat[hidden], .chat-toggle[hidden], .overlay[hidden], .field[hidden] { display: none; }
 .chat { position: fixed; top: env(safe-area-inset-top, 0px); bottom: env(safe-area-inset-bottom, 0px); left: 0; width: min(320px, 100vw); display: flex; flex-direction: column; background: rgba(22,19,32,.97); border-right: 2px solid var(--ink); z-index: 3; font-family: var(--sans); color: var(--text); }
 @media (max-width: 599px) { .chat { width: 100vw; border-right: 0; top: calc(env(safe-area-inset-top, 0px) + 62px); } }
@@ -77,7 +84,16 @@ button { font-family: inherit; }
 
 <div class="top">
   <button class="pill solid" id="signupBtn" type="button">sign up</button>
-  <button class="pill" id="userBtn" type="button" hidden></button>
+  <div class="acct" id="acct" hidden>
+    <button class="pill" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"></button>
+    <div class="menu" id="menu" role="menu" hidden>
+      <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.2 19c1.2-2.4 3.4-3.5 5.8-3.5s4.6 1.1 5.8 3.5"/></svg><span>Profile</span></button>
+      <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
+      <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.8 3.5 2.800 3.5 6"/></svg><span>Affiliates</span></button>
+      <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
+      <button type="button" role="menuitem" class="out" id="logoutBtn"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Log Out</span></button>
+    </div>
+  </div>
 </div>
 
 <button class="pill chat-toggle" id="chatToggle" type="button" hidden>chat</button>
@@ -143,12 +159,24 @@ button { font-family: inherit; }
   function setSession(s) {
     session = s;
     try { s ? localStorage.setItem("playltc-session", JSON.stringify(s)) : localStorage.removeItem("playltc-session"); } catch (e) {}
-    signupBtn.hidden = !!s; userBtn.hidden = !s;
-    if (s) userBtn.textContent = s.name + " \u00b7 log out";
+    signupBtn.hidden = !!s; $("acct").hidden = !s;
+    if (s) userBtn.textContent = s.name + " \u25be";
     input.placeholder = s ? "say something" : "sign up to chat";
   }
   setSession(session);
-  userBtn.addEventListener("click", function () { setSession(null); });
+  var menu = $("menu");
+  function menuOpen(o) { menu.hidden = !o; userBtn.setAttribute("aria-expanded", o); }
+  userBtn.addEventListener("click", function (e) { e.stopPropagation(); menuOpen(menu.hidden); });
+  document.addEventListener("click", function (e) { if (!menu.hidden && !menu.contains(e.target)) menuOpen(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") menuOpen(false); });
+  $("logoutBtn").addEventListener("click", function () { menuOpen(false); setSession(null); });
+  Array.prototype.forEach.call(menu.querySelectorAll("[data-soon]"), function (b) {
+    b.addEventListener("click", function () {
+      var s = b.querySelector("span"), t = s.textContent;
+      s.textContent = "Coming soon";
+      setTimeout(function () { s.textContent = t; }, 1200);
+    });
+  });
 
   function api(url, payload, asForm) {
     return fetch(url, {
