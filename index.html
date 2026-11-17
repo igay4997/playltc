@@ -444,6 +444,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
         <summary><span class="sico"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h3l8 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M18 9a4 4 0 0 1 0 6"/></svg></span>Announcement<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="abody">
           <input class="oin" id="oAnn" maxlength="200" placeholder="Message everyone will see" aria-label="Announcement">
+          <input class="oin" id="oAnnDur" maxlength="8" placeholder="How long? (5m to 24h, e.g. 30m, 2h)" aria-label="Announcement duration">
           <div class="orowb"><button class="obtn" id="oAnnPost" type="button">Post</button><button class="obtn ghost" id="oAnnClear" type="button">Clear</button></div>
         </div>
       </details>
@@ -813,13 +814,21 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   }
   $("oRefresh").addEventListener("click", function () { loadStats(); loadMuted(); });
 
+  function parseDur(s) {
+    var m = /^(\d+(?:\.\d+)?)\s*(m|min|mins|minutes?|h|hr|hrs|hours?)?$/i.exec(String(s).trim());
+    if (!m) return null;
+    var n = parseFloat(m[1]), unit = (m[2] || "m").charAt(0).toLowerCase();
+    var mins = unit === "h" ? n * 60 : n;
+    return mins >= 5 && mins <= 1440 ? Math.round(mins * 60000) : null;
+  }
   $("oAnnPost").addEventListener("click", function () {
-    var t = $("oAnn").value.trim().slice(0, 200);
+    var t = $("oAnn").value.trim().slice(0, 200), ms = parseDur($("oAnnDur").value);
     if (!t) { say2("Type a message first."); return; }
-    odb("PUT", "announcement", t).then(function () { say2("Announcement posted."); }).catch(oerr);
+    if (!ms) { say2("Duration must be between 5 minutes and 24 hours (e.g. 30m, 2h)."); return; }
+    odb("PUT", "announcement", { t: t, e: Date.now() + ms }).then(function () { say2("Announcement posted."); }).catch(oerr);
   });
   $("oAnnClear").addEventListener("click", function () {
-    odb("DELETE", "announcement").then(function () { $("oAnn").value = ""; say2("Announcement cleared."); }).catch(oerr);
+    odb("DELETE", "announcement").then(function () { $("oAnn").value = ""; $("oAnnDur").value = ""; say2("Announcement cleared."); }).catch(oerr);
   });
 
   function loadMuted() {
@@ -1129,12 +1138,17 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   }
   loadBadgeMap(); setInterval(loadBadgeMap, 60000);
 
-  var annText = "";
+  var annText = "", annTimer = null;
   var ann = new EventSource(base + "/announcement.json");
   ann.addEventListener("put", function (e) {
     var p; try { p = JSON.parse(e.data); } catch (x) { return; }
-    var t = p && typeof p.data === "string" ? p.data : "", el = $("announce");
+    var d = p ? p.data : null, el = $("announce"), t = "", exp = 0;
+    if (typeof d === "string") t = d;
+    else if (d && typeof d.t === "string") { t = d.t; exp = d.e || 0; }
+    clearTimeout(annTimer);
+    if (exp && Date.now() >= exp) t = "";
     annText = t; el.textContent = t; el.hidden = !t;
+    if (t && exp) annTimer = setTimeout(function () { annText = ""; el.hidden = true; el.textContent = ""; }, Math.min(exp - Date.now(), 2147483647));
   });
 
   var last = 0;
