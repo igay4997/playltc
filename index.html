@@ -28,7 +28,6 @@ body {
   overflow: hidden;
   display: grid;
   place-items: center;
-  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 h1 {
@@ -128,10 +127,6 @@ h1 span {
     setTimeout(function () { r.remove(); }, 3600);
   }
 
-  document.addEventListener("pointerdown", function (e) {
-    ring(e.clientX, e.clientY);
-    setTimeout(function () { ring(e.clientX, e.clientY); }, 240);
-  });
 
   // random circle splashes anywhere on the screen
   function splash(x, y) {
