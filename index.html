@@ -199,6 +199,26 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .copy { justify-self: start; padding: 6px 16px; border: 0; border-radius: 999px; background: var(--focus); color: #1b1530; font: 400 .9rem var(--display); cursor: pointer; }
 .wpanel .note { margin: 12px 0 0; color: var(--muted); font-size: .9rem; text-align: center; }
 .go:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; filter: none; transform: none; }
+
+/* ---- chat polish ---- */
+#chatStatus::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: var(--muted); }
+#chatStatus[data-s="live"]::before { background: #7ee0b8; box-shadow: 0 0 8px #7ee0b8; }
+.chat-msgs { gap: 2px; padding: 16px 12px; }
+.chat-msgs .note { margin: auto; max-width: 200px; text-align: center; line-height: 1.5; }
+.msg { display: grid; grid-template-columns: 32px 1fr; gap: 10px; padding: 3px 8px; border-radius: 10px; background: none; }
+.msg.first { margin-top: 12px; }
+.msg:first-child { margin-top: 0; }
+.msg:hover { background: rgba(255,255,255,.04); }
+.msg:last-child { animation: pop .25s ease; }
+@keyframes pop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.mav { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 400 .95rem var(--display); color: #1b1530; }
+.mhead { display: flex; align-items: baseline; gap: 8px; }
+.mname { font-weight: 700; font-size: .85rem; }
+.msg.me .mname::after { content: " (you)"; color: var(--muted); font-weight: 600; font-size: .72rem; }
+.mtime { font-size: .7rem; color: var(--muted); }
+.mtext { font-size: .93rem; line-height: 1.4; color: var(--text); overflow-wrap: anywhere; }
+.chat-form { background: rgba(255,255,255,.02); }
+@media (prefers-reduced-motion: reduce) { .msg:last-child { animation: none; } }
 .pager .cur { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--tab); color: #1b1530; font: 400 .9rem var(--display); }
 </style>
 </head>
@@ -684,21 +704,48 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 
   var msgs = {};
   function valid(m) { return m && typeof m.name === "string" && typeof m.text === "string"; }
+  function tint(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+    return "hsl(" + h + ",70%,68%)";
+  }
   function render() {
     var keys = Object.keys(msgs).sort();
     while (keys.length > 60) delete msgs[keys.shift()];
+    var stick = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
     list.textContent = "";
     if (!keys.length) { note("No messages yet. Say hi!"); return; }
+    var prev = null;
     keys.forEach(function (k) {
-      var m = msgs[k], row = document.createElement("div"), b = document.createElement("b"), t = document.createElement("span");
-      row.className = "msg"; b.textContent = m.name.slice(0, 16); t.textContent = " " + m.text.slice(0, 200);
-      row.appendChild(b); row.appendChild(t); list.appendChild(row);
+      var m = msgs[k], name = m.name.slice(0, 16), first = prev !== name, mine = !!session && session.name === name;
+      prev = name;
+      var row = document.createElement("div");
+      row.className = "msg" + (first ? " first" : "") + (mine ? " me" : "");
+      var av = document.createElement("span");
+      if (first) { av.className = "mav"; av.textContent = name.charAt(0).toUpperCase(); av.style.background = tint(name); }
+      row.appendChild(av);
+      var body = document.createElement("div");
+      if (first) {
+        var head = document.createElement("div"), nm = document.createElement("span");
+        head.className = "mhead"; nm.className = "mname"; nm.textContent = name; nm.style.color = tint(name);
+        head.appendChild(nm);
+        if (typeof m.ts === "number") {
+          var tm = document.createElement("span");
+          tm.className = "mtime";
+          tm.textContent = new Date(m.ts).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+          head.appendChild(tm);
+        }
+        body.appendChild(head);
+      }
+      var tx = document.createElement("div");
+      tx.className = "mtext"; tx.textContent = m.text.slice(0, 200);
+      body.appendChild(tx); row.appendChild(body); list.appendChild(row);
     });
-    list.scrollTop = list.scrollHeight;
+    if (stick) list.scrollTop = list.scrollHeight;
   }
   var es = new EventSource(base + "/messages.json?orderBy=" + encodeURIComponent('"$key"') + "&limitToLast=60");
-  es.addEventListener("open", function () { statusEl.textContent = "live"; });
-  es.addEventListener("error", function () { statusEl.textContent = "reconnecting\u2026"; });
+  es.addEventListener("open", function () { statusEl.textContent = "live"; statusEl.dataset.s = "live"; });
+  es.addEventListener("error", function () { statusEl.textContent = "reconnecting\u2026"; statusEl.dataset.s = "off"; });
   function onEvent(e) {
     var p; try { p = JSON.parse(e.data); } catch (x) { return; }
     if (!p || typeof p.path !== "string") return;
