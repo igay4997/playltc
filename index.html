@@ -183,6 +183,18 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .pager { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 18px; }
 .pager button { min-width: 34px; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: rgba(255,255,255,.07); color: var(--text); font: 400 .85rem var(--display); cursor: pointer; }
 .pager button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ---- wallet page ---- */
+.wal { max-width: 520px; margin: 0 auto; display: grid; gap: 20px; }
+.wbal { padding: 22px 24px; }
+.wbal small { display: block; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+.wbal strong { font: 400 2.2rem var(--display); }
+.wpanel { padding: 20px 20px 22px; }
+.wpanel[hidden] { display: none; }
+.wpanel .field input { padding-left: 16px; }
+.wpanel input:disabled { opacity: .6; cursor: not-allowed; }
+.wpanel .note { margin: 12px 0 0; color: var(--muted); font-size: .9rem; text-align: center; }
+.go:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; filter: none; transform: none; }
 .pager .cur { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--tab); color: #1b1530; font: 400 .9rem var(--display); }
 </style>
 </head>
@@ -201,7 +213,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     <button class="pill" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"></button>
     <div class="menu" id="menu" role="menu" hidden>
       <button type="button" role="menuitem" id="profBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.2 19c1.2-2.4 3.4-3.5 5.8-3.5s4.6 1.1 5.8 3.5"/></svg><span>Profile</span></button>
-      <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg><span>Wallet</span></button>
+      <button type="button" role="menuitem" id="walBtn"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg><span>Wallet</span></button>
       <button type="button" role="menuitem" id="settBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
       <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.8 3.5 2.800 3.5 6"/></svg><span>Affiliates</span></button>
       <button type="button" role="menuitem" id="histBtn"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
@@ -296,6 +308,31 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   </div>
   <div class="pbox hbox"><div id="hTable"></div></div>
   <div class="pager" id="hPager"></div>
+</section>
+
+<section class="prof" id="wallet" hidden role="dialog" aria-modal="true" aria-label="Wallet">
+  <button class="pill prof-x" id="walX" type="button">close</button>
+  <h2 class="stitle">Wallet</h2>
+  <div class="wal">
+    <div class="pbox wbal"><small>Balance</small><strong>$0.00</strong></div>
+    <div class="pbox">
+      <div class="tabs" role="tablist" id="walTabs">
+        <button type="button" role="tab" data-t="dep" aria-selected="true">Deposit</button>
+        <button type="button" role="tab" data-t="wd" aria-selected="false">Withdraw</button>
+      </div>
+      <div class="wpanel" id="walDep">
+        <label class="field"><input type="text" placeholder="Amount (USD)" aria-label="Deposit amount" disabled></label>
+        <button class="go" type="button" disabled>Deposit</button>
+        <p class="note">Deposits aren’t open yet. Check back soon.</p>
+      </div>
+      <div class="wpanel" id="walWd" hidden>
+        <label class="field"><input type="text" placeholder="Amount (USD)" aria-label="Withdrawal amount" disabled></label>
+        <label class="field"><input type="text" placeholder="Wallet address" aria-label="Wallet address" disabled></label>
+        <button class="go" type="button" disabled>Withdraw</button>
+        <p class="note">Withdrawals aren’t open yet. Check back soon.</p>
+      </div>
+    </div>
+  </div>
 </section>
 
 <div class="overlay" id="overlay" hidden>
@@ -533,6 +570,17 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   });
   $("histX").addEventListener("click", function () { hist.hidden = true; });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") hist.hidden = true; });
+
+  /* ---------- wallet page ---------- */
+  var wallet = $("wallet"), walTabBtns = $("walTabs").querySelectorAll("button");
+  function walTab(t) {
+    Array.prototype.forEach.call(walTabBtns, function (b) { b.setAttribute("aria-selected", b.dataset.t === t); });
+    $("walDep").hidden = t !== "dep"; $("walWd").hidden = t !== "wd";
+  }
+  Array.prototype.forEach.call(walTabBtns, function (b) { b.addEventListener("click", function () { walTab(b.dataset.t); }); });
+  $("walBtn").addEventListener("click", function () { if (!session) return; menuOpen(false); walTab("dep"); wallet.hidden = false; });
+  $("walX").addEventListener("click", function () { wallet.hidden = true; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") wallet.hidden = true; });
   Array.prototype.forEach.call(menu.querySelectorAll("[data-soon]"), function (b) {
     b.addEventListener("click", function () {
       var s = b.querySelector("span"), t = s.textContent;
