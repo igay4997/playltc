@@ -81,6 +81,21 @@ button { font-family: inherit; }
 .play:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.3); }
 @media (prefers-reduced-motion: reduce) { .play { transition: none; } }
 
+/* ---- lobby ---- */
+.lobby[hidden] { display: none; }
+.lobby { position: fixed; top: 0; bottom: 0; left: var(--chatw, 0px); right: 0; z-index: 2; display: grid; place-items: center; padding: 90px 16px 16px; animation: fade .4s ease both; }
+body.in-lobby h1, body.in-lobby .tg { display: none; }
+.lob-logo { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 20px; display: flex; padding: 0; background: none; border: 0; cursor: pointer; font-family: var(--display); font-size: clamp(2rem, 7vw, 2.8rem); line-height: 1.2; color: var(--ink); transform: rotate(-3deg); text-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 30px rgba(255,59,59,.25); }
+.lob-logo span { display: inline-block; animation: bob 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -.38s); }
+.lwal { width: min(420px, 100%); padding: 30px 26px 24px; text-align: center; font-family: var(--sans); color: var(--text); border: 1px solid rgba(255,255,255,.06); box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.lwal small { display: block; color: var(--muted); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
+.lwal strong { display: block; margin: 8px 0 22px; font: 400 clamp(2.6rem, 9vw, 3.6rem) var(--display); }
+.lbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lbtns .go { margin-top: 0; }
+.go.alt { background: rgba(255,255,255,.1); color: var(--text); }
+.lnote { margin: 16px 0 0; color: var(--muted); font-size: .88rem; }
+@media (prefers-reduced-motion: reduce) { .lob-logo span { animation: none; } .lobby { animation: none; } }
+
 /* ---- cleaner, softer look ---- */
 body { background-color: var(--bg); background-image: radial-gradient(ellipse 70% 60% at 55% 45%, #231d38 0%, var(--bg) 70%); }
 h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
@@ -309,6 +324,19 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 </div>
 
 <div class="announce" id="announce" role="status" hidden></div>
+
+<section class="lobby" id="lobby" hidden aria-label="Lobby">
+  <button class="lob-logo" id="lobLogo" type="button" aria-label="playltc, back to home"></button>
+  <div class="pbox lwal">
+    <small>Wallet</small>
+    <strong>$0.00</strong>
+    <div class="lbtns">
+      <button class="go" id="lobDep" type="button">Deposit</button>
+      <button class="go alt" id="lobWd" type="button">Withdraw</button>
+    </div>
+    <p class="lnote">Games are coming soon.</p>
+  </div>
+</section>
 
 <div class="top">
   <button class="pill" id="ownerBtn" type="button" hidden>owner</button>
@@ -562,6 +590,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     signupBtn.hidden = !!s; $("acct").hidden = !s;
     if (s) userBtn.textContent = s.name + " \u25be";
     input.placeholder = s ? "say something" : "sign up to chat";
+    if (!s) lobbyOpen(false);
     ownerSync();
   }
   setSession(session);
@@ -1048,11 +1077,19 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     b.addEventListener("click", function () { var i = b.parentNode.querySelector("input"); i.type = i.type === "password" ? "text" : "password"; });
   });
   input.addEventListener("focus", function () { if (!session) { input.blur(); openModal("signup"); } });
+  function lobbyOpen(o) { $("lobby").hidden = !o; body.classList.toggle("in-lobby", o); }
+  "playltc".split("").forEach(function (ch, i) {
+    var sp = document.createElement("span");
+    sp.textContent = ch; sp.style.setProperty("--i", i); sp.setAttribute("aria-hidden", "true");
+    $("lobLogo").appendChild(sp);
+  });
   $("playBtn").addEventListener("click", function () {
     if (!session) { openModal("signup"); return; }
-    var l = this.querySelector(".pl"); l.textContent = "coming soon";
-    setTimeout(function () { l.textContent = "play"; }, 1400);
+    lobbyOpen(true);
   });
+  $("lobLogo").addEventListener("click", function () { lobbyOpen(false); });
+  $("lobDep").addEventListener("click", function () { $("walBtn").click(); });
+  $("lobWd").addEventListener("click", function () { $("walBtn").click(); walTab("wd"); });
 
   // Checks the address format AND its built-in checksum, so typos are caught.
   function bech32ok(s) {
