@@ -200,7 +200,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .announce[hidden] { display: none; }
 .announce { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: calc(var(--chatw, 0px) + 16px); right: 250px; z-index: 2; padding: 10px 16px; background: rgba(154,124,245,.16); border: 1px solid var(--focus); border-radius: 999px; color: var(--text); font: 600 .9rem var(--sans); text-align: center; overflow-wrap: anywhere; }
 @media (max-width: 899px) { .announce { top: calc(env(safe-area-inset-top, 0px) + 66px); left: 16px; right: 16px; border-radius: 14px; } }
-.mbadge { padding: 1px 8px; border-radius: 999px; font: 400 .62rem var(--display); letter-spacing: .06em; text-transform: uppercase; color: #1b1530; }
+.mbadge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; font: 400 .62rem var(--display); letter-spacing: .06em; text-transform: uppercase; color: #1b1530; }
 .mdel { margin-left: 8px; padding: 0 4px; background: none; border: 0; color: #ff8a8a; font-weight: 700; cursor: pointer; opacity: .45; }
 .msg:hover .mdel { opacity: 1; }
 .ohead { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.08); background: linear-gradient(180deg, rgba(255,59,59,.16), transparent); }
@@ -217,6 +217,14 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .olink { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; margin-bottom: 6px; background: var(--field); border: 1px solid var(--line); border-radius: 10px; color: var(--text); text-decoration: none; font-weight: 600; font-size: .9rem; }
 .olink:hover { border-color: var(--focus); }
 .olink span { color: var(--muted); }
+
+.ricon { display: inline-grid; place-items: center; flex: none; }
+.ricon svg { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.mbadge .ricon { font-size: .85rem; }
+.uicons { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.uicons .ricon { width: 22px; height: 22px; border-radius: 7px; font-size: .8rem; color: #1b1530; border: 1.5px solid rgba(0,0,0,.35); }
+.bprev { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-weight: 700; font-size: .9rem; color: var(--text); }
+.bprev .ricon { width: 28px; height: 28px; border-radius: 8px; font-size: 1rem; color: #1b1530; border: 2px solid rgba(0,0,0,.35); }
 
 /* ---- history page ---- */
 .htools { max-width: 1100px; margin: 0 auto 16px; display: flex; justify-content: space-between; gap: 12px; }
@@ -635,6 +643,16 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     ["Moderator", "#7ee0b8", SHIELD + "<path d='M9 12l2 2 4-4'/>"],
     ["Owner", "#ff8a3d", "<path d='M3 18h18l-2-10-5 5-2-7-2 7-5-5z'/>"]
   ];
+  function roleIcon(b) {
+    var sp = document.createElement("span");
+    sp.className = "ricon"; sp.setAttribute("aria-hidden", "true");
+    sp.innerHTML = '<svg viewBox="0 0 24 24">' + b[2] + '</svg>';
+    return sp;
+  }
+  function badgesOf(name) {
+    var owned = badgeMap[name] || {};
+    return BADGES.filter(function (b) { return owned[b[0]]; });
+  }
   function drawBadges() {
   $("badgeGrid").innerHTML = BADGES.map(function (b) {
     var on = OWNED.indexOf(b[0]) > -1;
@@ -859,6 +877,15 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   });
 
   BADGES.forEach(function (b) { var o = document.createElement("option"); o.textContent = b[0]; $("oBadge").appendChild(o); });
+  var bprev = hel("div", "bprev");
+  $("oBadge").parentNode.insertBefore(bprev, $("oBadge").nextSibling);
+  function drawPrev() {
+    var b = BADGES.filter(function (x) { return x[0] === $("oBadge").value; })[0];
+    bprev.textContent = "";
+    if (!b) return;
+    var r = roleIcon(b); r.style.background = b[1]; bprev.appendChild(r); bprev.appendChild(document.createTextNode(b[0]));
+  }
+  $("oBadge").addEventListener("change", drawPrev); drawPrev();
   function badgeAct(give) {
     var n = $("oUser").value.trim().toLowerCase(), b = $("oBadge").value;
     if (!/^[a-z0-9_]{3,16}$/.test(n)) { say2("Enter a valid username."); return; }
@@ -881,6 +908,12 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       info.appendChild(document.createTextNode(u.username));
       info.appendChild(hel("small", null, typeof u.ts === "number" ? "Joined " + new Date(u.ts).toLocaleDateString("en-US") : "Joined \u2014"));
       if (u.ltc) info.appendChild(hel("small", null, String(u.ltc)));
+      var ob = badgesOf(u.username.toLowerCase());
+      if (ob.length) {
+        var ic = hel("span", "uicons");
+        ob.forEach(function (b) { var r = roleIcon(b); r.style.background = b[1]; r.title = b[0]; ic.appendChild(r); });
+        info.appendChild(ic);
+      }
       pick.type = "button";
       pick.addEventListener("click", function () { $("oUser").value = u.username; $("oMute").value = u.username; say2("Picked " + u.username + "."); });
       btns.appendChild(pick);
@@ -1087,7 +1120,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
         head.className = "mhead"; nm.className = "mname"; nm.textContent = name; nm.style.color = tint(name);
         head.appendChild(nm);
         var tb = topBadge(name);
-        if (tb) { var bg = document.createElement("span"); bg.className = "mbadge"; bg.textContent = tb[0]; bg.style.background = tb[1]; head.appendChild(bg); }
+        if (tb) { var bg = document.createElement("span"); bg.className = "mbadge"; bg.style.background = tb[1]; bg.appendChild(roleIcon(tb)); bg.appendChild(document.createTextNode(tb[0])); head.appendChild(bg); }
         if (typeof m.ts === "number") {
           var tm = document.createElement("span");
           tm.className = "mtime";
