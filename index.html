@@ -193,6 +193,10 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .wpanel[hidden] { display: none; }
 .wpanel .field input { padding-left: 16px; }
 .wpanel input:disabled { opacity: .6; cursor: not-allowed; }
+.addr { margin-top: 16px; padding: 14px 16px; background: var(--field); border: 2px solid var(--line); border-radius: 12px; display: grid; gap: 8px; }
+.addr small { color: var(--muted); font-weight: 600; }
+.addr code { font: 600 .95rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color: var(--text); overflow-wrap: anywhere; user-select: all; }
+.copy { justify-self: start; padding: 6px 16px; border: 0; border-radius: 999px; background: var(--focus); color: #1b1530; font: 400 .9rem var(--display); cursor: pointer; }
 .wpanel .note { margin: 12px 0 0; color: var(--muted); font-size: .9rem; text-align: center; }
 .go:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; filter: none; transform: none; }
 .pager .cur { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--tab); color: #1b1530; font: 400 .9rem var(--display); }
@@ -323,6 +327,11 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       <div class="wpanel" id="walDep">
         <label class="field"><input type="text" placeholder="Amount (USD)" aria-label="Deposit amount" disabled></label>
         <button class="go" type="button" disabled>Deposit</button>
+        <div class="addr">
+          <small>Send to this wallet</small>
+          <code id="depAddr">LbJjLAgrb28BgnnjF1s85ffrRBNYDkchpn</code>
+          <button class="copy" id="copyAddr" type="button">Copy</button>
+        </div>
         <p class="note">Deposits aren’t open yet. Check back soon.</p>
       </div>
       <div class="wpanel" id="walWd" hidden>
@@ -580,6 +589,13 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   Array.prototype.forEach.call(walTabBtns, function (b) { b.addEventListener("click", function () { walTab(b.dataset.t); }); });
   $("walBtn").addEventListener("click", function () { if (!session) return; menuOpen(false); walTab("dep"); wallet.hidden = false; });
   $("walX").addEventListener("click", function () { wallet.hidden = true; });
+  $("copyAddr").addEventListener("click", function () {
+    var b = this;
+    function done(t) { b.textContent = t; setTimeout(function () { b.textContent = "Copy"; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText($("depAddr").textContent).then(function () { done("Copied"); }, function () { done("Press Ctrl+C"); });
+    } else { done("Press Ctrl+C"); }
+  });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") wallet.hidden = true; });
   Array.prototype.forEach.call(menu.querySelectorAll("[data-soon]"), function (b) {
     b.addEventListener("click", function () {
