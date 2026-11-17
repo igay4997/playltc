@@ -459,7 +459,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       </div>
       <div class="wpanel" id="walDep">
         <form id="depForm" autocomplete="off" novalidate>
-          <label class="field"><input id="depAmt" type="text" inputmode="decimal" maxlength="7" placeholder="Amount (USD), $1 to $1000" aria-label="Deposit amount in USD"></label>
+          <label class="field"><input id="depAmt" type="text" inputmode="decimal" maxlength="7" placeholder="Amount (USD), $0.25 to $1000" aria-label="Deposit amount in USD"></label>
           <div class="err" id="depErr" role="alert"></div>
           <button class="go" id="depGo" type="submit">Deposit</button>
           <p class="note">We&rsquo;ll give you an exact Litecoin amount to send. Your balance updates by itself once it confirms.</p>
@@ -1140,7 +1140,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   $("depForm").addEventListener("submit", function (e) {
     e.preventDefault();
     var usd = parseFloat($("depAmt").value), err = $("depErr");
-    if (!isFinite(usd) || usd < 1 || usd > 1000) { err.textContent = "Enter an amount from $1 to $1000."; return; }
+    if (!isFinite(usd) || usd < 0.25 || usd > 1000) { err.textContent = "Enter an amount from $0.25 to $1000."; return; }
     err.textContent = ""; $("depGo").disabled = true;
     dapi({ action: "create", usd: usd }).then(function (d) { $("depAmt").value = ""; applyWallet(d); walletPoll(); })
       .catch(function (x) { err.textContent = x.message; })
