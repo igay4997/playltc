@@ -20,7 +20,7 @@
  */
 
 const WALLET = "LbJjLAgrb28BgnnjF1s85ffrRBNYDkchpn";
-const MIN_USD = 1;
+const MIN_USD = 0.25;
 const MAX_USD = 1000;
 const SEND_WINDOW_MS = 30 * 60 * 1000; // time the user has to send the payment
 const CONFIRM_GRACE_S = 30 * 60;       // a payment sent in time may confirm this long after the window
@@ -202,7 +202,7 @@ async function state(d, uid) {
 }
 
 async function create(d, uid, usd) {
-  if (!(usd >= MIN_USD && usd <= MAX_USD)) throw httpErr(400, "Deposit between $" + MIN_USD + " and $" + MAX_USD + ".");
+  if (!(usd >= MIN_USD && usd <= MAX_USD)) throw httpErr(400, "Deposit between $" + MIN_USD.toFixed(2) + " and $" + MAX_USD + ".");
   usd = Math.round(usd * 100) / 100;
   const now = Date.now();
   const all = flatten((await d.ref("pending").once("value")).val());
@@ -210,10 +210,11 @@ async function create(d, uid, usd) {
   if (mine.length >= MAX_OPEN) throw httpErr(400, "You already have " + MAX_OPEN + " open deposits. Cancel one first.");
 
   const base = Math.round(usd / (await ltcPrice()) * 1e8);
+  const spread = Math.max(200, Math.min(9999, Math.floor(base * 0.01)));
   const used = new Set(all.map(function (p) { return p.ltc; }));
   let ltc = 0;
   for (let i = 0; i < 100; i++) {
-    ltc = base + 1 + Math.floor(Math.random() * 9999); // up to 0.0001 LTC of tag
+    ltc = base + 1 + Math.floor(Math.random() * spread); // small unique tag, at most about 1% of the deposit
     if (!used.has(ltc)) break;
     ltc = 0;
   }
