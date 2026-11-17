@@ -87,13 +87,13 @@ button { font-family: inherit; }
 body.in-lobby h1, body.in-lobby .tg { display: none; }
 .lob-logo { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 20px; display: flex; padding: 0; background: none; border: 0; cursor: pointer; font-family: var(--display); font-size: clamp(2rem, 7vw, 2.8rem); line-height: 1.2; color: var(--ink); transform: rotate(-3deg); text-shadow: 0 3px 0 rgba(0,0,0,.3), 0 0 30px rgba(255,59,59,.25); }
 .lob-logo span { display: inline-block; animation: bob 3.2s ease-in-out infinite; animation-delay: calc(var(--i) * -.38s); }
-.lwal { width: min(420px, 100%); padding: 30px 26px 24px; text-align: center; font-family: var(--sans); color: var(--text); border: 1px solid rgba(255,255,255,.06); box-shadow: 0 20px 60px rgba(0,0,0,.45); }
-.lwal small { display: block; color: var(--muted); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; font-size: .78rem; }
-.lwal strong { display: block; margin: 8px 0 22px; font: 400 clamp(2.6rem, 9vw, 3.6rem) var(--display); }
-.lbtns { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.lbtns .go { margin-top: 0; }
-.go.alt { background: rgba(255,255,255,.1); color: var(--text); }
-.lnote { margin: 16px 0 0; color: var(--muted); font-size: .88rem; }
+.lwal { position: absolute; top: calc(env(safe-area-inset-top, 0px) + 8px); left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 26px 9px; background: var(--panel); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; box-shadow: 0 8px 26px rgba(0,0,0,.35); color: var(--text); cursor: pointer; font-family: var(--sans); transition: border-color .15s, transform .15s; }
+.lwal:hover { border-color: var(--focus); transform: translateX(-50%) translateY(-1px); }
+.lwl { display: flex; align-items: center; gap: 7px; color: var(--muted); font-weight: 700; font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; }
+.lwl svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lwal strong { font: 400 1.5rem/1.1 var(--display); }
+@media (max-width: 640px) { .lwal { top: calc(env(safe-area-inset-top, 0px) + 66px); } }
+.lnote { margin: 0; color: var(--muted); font: .95rem var(--sans); }
 @media (prefers-reduced-motion: reduce) { .lob-logo span { animation: none; } .lobby { animation: none; } }
 
 /* ---- cleaner, softer look ---- */
@@ -327,15 +327,11 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 
 <section class="lobby" id="lobby" hidden aria-label="Lobby">
   <button class="lob-logo" id="lobLogo" type="button" aria-label="playltc, back to home"></button>
-  <div class="pbox lwal">
-    <small>Wallet</small>
+  <button class="lwal" id="lobWal" type="button" aria-label="Open wallet">
+    <span class="lwl"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>Wallet</span>
     <strong>$0.00</strong>
-    <div class="lbtns">
-      <button class="go" id="lobDep" type="button">Deposit</button>
-      <button class="go alt" id="lobWd" type="button">Withdraw</button>
-    </div>
-    <p class="lnote">Games are coming soon.</p>
-  </div>
+  </button>
+  <p class="lnote">Games are coming soon.</p>
 </section>
 
 <div class="top">
@@ -1088,8 +1084,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     lobbyOpen(true);
   });
   $("lobLogo").addEventListener("click", function () { lobbyOpen(false); });
-  $("lobDep").addEventListener("click", function () { $("walBtn").click(); });
-  $("lobWd").addEventListener("click", function () { $("walBtn").click(); walTab("wd"); });
+  $("lobWal").addEventListener("click", function () { $("walBtn").click(); });
 
   // Checks the address format AND its built-in checksum, so typos are caught.
   function bech32ok(s) {
