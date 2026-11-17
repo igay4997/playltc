@@ -71,6 +71,35 @@ button { font-family: inherit; }
 .card[data-mode="login"] .su { display: none; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { h1 span { animation: none; } }
+
+/* ---- cleaner, softer look ---- */
+body { background-color: var(--bg); background-image: radial-gradient(ellipse 70% 60% at 55% 45%, #231d38 0%, var(--bg) 70%); }
+h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
+.tg, .top { animation: fade 1s .3s ease both; }
+@keyframes rise { from { opacity: 0; transform: translateY(14px) rotate(-2deg); } to { opacity: 1; transform: translateY(0) rotate(-2deg); } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.tg span { border-width: 1.5px; font-size: clamp(.9rem, 3.2vw, 1.1rem); padding: .5em 1.1em; opacity: .85; }
+.pill { border-width: 1.5px; font-size: 1rem; padding: .42em 1.15em; transition: transform .15s ease, background .15s ease; }
+.pill:hover { transform: translateY(-1px); }
+.pill:not(.solid):hover { background: rgba(255,59,59,.12); }
+.chat { background: rgba(24,20,36,.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-right: 1px solid rgba(255,255,255,.08); box-shadow: 8px 0 40px rgba(0,0,0,.35); }
+.chat-head { border-bottom: 1px solid rgba(255,255,255,.08); padding: 16px 18px; font-size: 1.25rem; }
+.chat-head small { color: var(--muted); opacity: 1; }
+.chat-msgs { padding: 14px 18px; gap: 10px; scrollbar-width: thin; scrollbar-color: var(--line) transparent; }
+.msg { padding: 8px 12px; background: rgba(255,255,255,.04); border-radius: 12px; }
+.msg b { display: block; font-size: .78rem; letter-spacing: .02em; margin-bottom: 2px; }
+.chat-form { border-top: 1px solid rgba(255,255,255,.08); padding: 14px; }
+.chat-form input { border: 1px solid var(--line); border-radius: 999px; padding: 10px 16px; transition: border-color .15s; }
+.chat-form input::placeholder { color: var(--muted); }
+.chat-form input:focus { outline: 0; border-color: var(--focus); }
+.send { border-radius: 999px; padding: 0 18px; transition: transform .15s; }
+.send:hover { transform: scale(1.04); }
+.menu { border: 1px solid rgba(255,255,255,.08); }
+.card { border: 1px solid rgba(255,255,255,.06); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.overlay { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.go { transition: transform .15s, filter .15s; }
+.go:hover { filter: brightness(1.06); transform: translateY(-1px); }
+@media (prefers-reduced-motion: reduce) { h1, .tg, .top { animation: none; } .pill, .go, .send, .chat-form input { transition: none; } }
 </style>
 </head>
 <body class="chat-open">
