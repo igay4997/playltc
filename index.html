@@ -182,6 +182,27 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   body.chat-open.owner-open { --chatw: 620px; }
 }
 @media (max-width: 899px) { .owner { width: 100vw; border-right: 0; top: calc(env(safe-area-inset-top, 0px) + 62px); } }
+.owner .acc summary { padding: 12px 14px; font-size: .95rem; gap: 10px; }
+.owner .abody { padding: 4px 14px 14px; }
+.oin { display: block; width: 100%; box-sizing: border-box; margin-bottom: 8px; background: var(--field); color: var(--text); border: 2px solid var(--line); border-radius: 10px; padding: 9px 11px; font: 16px var(--sans); }
+.oin:focus { outline: 0; border-color: var(--focus); }
+.orowb { display: flex; gap: 8px; margin-bottom: 8px; }
+.obtn { flex: 1; padding: 9px 12px; border: 0; border-radius: 999px; background: var(--tab); color: #1b1530; font: 400 .9rem var(--display); cursor: pointer; }
+.obtn.ghost { background: rgba(255,255,255,.1); color: var(--text); width: 100%; }
+.orowb .obtn.ghost { width: auto; }
+.obtn.danger { width: 100%; margin-top: 8px; background: #ff6b6b; }
+.ostats { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; margin-bottom: 10px; color: var(--text); }
+.ostats b { text-align: right; }
+.olist { display: grid; gap: 6px; margin: 8px 0; font-size: .85rem; max-height: 220px; overflow-y: auto; }
+.oitem { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 10px; background: var(--field); border-radius: 8px; overflow-wrap: anywhere; color: var(--text); }
+.oitem small { display: block; color: var(--muted); }
+.oitem button { background: none; border: 0; color: var(--tab); font-weight: 700; cursor: pointer; flex: none; }
+.announce[hidden] { display: none; }
+.announce { position: fixed; top: calc(env(safe-area-inset-top, 0px) + 14px); left: calc(var(--chatw, 0px) + 16px); right: 250px; z-index: 2; padding: 10px 16px; background: rgba(154,124,245,.16); border: 1px solid var(--focus); border-radius: 999px; color: var(--text); font: 600 .9rem var(--sans); text-align: center; overflow-wrap: anywhere; }
+@media (max-width: 899px) { .announce { top: calc(env(safe-area-inset-top, 0px) + 66px); left: 16px; right: 16px; border-radius: 14px; } }
+.mbadge { padding: 1px 8px; border-radius: 999px; font: 400 .62rem var(--display); letter-spacing: .06em; text-transform: uppercase; color: #1b1530; }
+.mdel { margin-left: 8px; padding: 0 4px; background: none; border: 0; color: #ff8a8a; font-weight: 700; cursor: pointer; opacity: .45; }
+.msg:hover .mdel { opacity: 1; }
 
 /* ---- history page ---- */
 .htools { max-width: 1100px; margin: 0 auto 16px; display: flex; justify-content: space-between; gap: 12px; }
@@ -252,6 +273,8 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.9 4.1 2.9 11.4c-1.3.5-1.3 1.3-.2 1.6l4.9 1.5 1.9 5.7c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.8-.8L23 5.4c.3-1.3-.5-1.9-1.1-1.3Z"/></svg>
   t.me/coming soon
 </span></div>
+
+<div class="announce" id="announce" role="status" hidden></div>
 
 <div class="top">
   <button class="pill" id="ownerBtn" type="button" hidden>owner</button>
@@ -394,11 +417,43 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   <div class="chat-head"><div>owner panel</div><button id="ownerX" type="button" aria-label="Close owner panel">&times;</button></div>
   <div class="owner-body">
     <p class="onote">Only you can see this panel.</p>
-    <div class="orow">Chat moderation<span>soon</span></div>
-    <div class="orow">Users &amp; roles<span>soon</span></div>
-    <div class="orow">Badges<span>soon</span></div>
-    <div class="orow">Deposits<span>soon</span></div>
-    <div class="orow">Site settings<span>soon</span></div>
+    <div class="acc">
+      <details class="pbox" name="oacc" open>
+        <summary>Overview</summary>
+        <div class="abody">
+          <div class="ostats" id="oStats">Loading…</div>
+          <button class="obtn ghost" id="oRefresh" type="button">Refresh</button>
+        </div>
+      </details>
+      <details class="pbox" name="oacc">
+        <summary>Announcement</summary>
+        <div class="abody">
+          <input class="oin" id="oAnn" maxlength="200" placeholder="Message everyone will see" aria-label="Announcement">
+          <div class="orowb"><button class="obtn" id="oAnnPost" type="button">Post</button><button class="obtn ghost" id="oAnnClear" type="button">Clear</button></div>
+        </div>
+      </details>
+      <details class="pbox" name="oacc">
+        <summary>Chat moderation</summary>
+        <div class="abody">
+          <p class="onote">Click the × next to any message in the chat to delete it.</p>
+          <input class="oin" id="oMute" maxlength="16" placeholder="Username to mute" aria-label="Username to mute">
+          <div class="orowb"><button class="obtn" id="oMuteBtn" type="button">Mute</button></div>
+          <div class="olist" id="oMuted"></div>
+          <button class="obtn danger" id="oClear" type="button">Clear all messages</button>
+        </div>
+      </details>
+      <details class="pbox" name="oacc">
+        <summary>Users &amp; badges</summary>
+        <div class="abody">
+          <input class="oin" id="oUser" maxlength="16" placeholder="Username" aria-label="Username">
+          <select class="oin" id="oBadge" aria-label="Badge"></select>
+          <div class="orowb"><button class="obtn" id="oGrant" type="button">Give</button><button class="obtn ghost" id="oRevoke" type="button">Remove</button></div>
+          <button class="obtn ghost" id="oLoadUsers" type="button">Show all users</button>
+          <div class="olist" id="oUsers"></div>
+        </div>
+      </details>
+    </div>
+    <div class="onote" id="oMsg" role="status"></div>
   </div>
 </aside>
 
@@ -555,11 +610,14 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     ["Moderator", "#7ee0b8", SHIELD + "<path d='M9 12l2 2 4-4'/>"],
     ["Owner", "#ff8a3d", "<path d='M3 18h18l-2-10-5 5-2-7-2 7-5-5z'/>"]
   ];
+  function drawBadges() {
   $("badgeGrid").innerHTML = BADGES.map(function (b) {
     var on = OWNED.indexOf(b[0]) > -1;
     return '<div class="badge' + (on ? "" : " locked") + '" title="' + (on ? "Unlocked" : "Locked") + '"><span class="tile" style="background:' + b[1] + '"><svg viewBox="0 0 24 24">' + b[2] + '</svg></span>' + b[0] + '</div>';
   }).join("");
   $("badgeCount").textContent = OWNED.length + "/" + BADGES.length;
+  }
+  drawBadges();
 
   function openSettings() {
     if (!session) return;
@@ -573,6 +631,10 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     $("sMsg").textContent = "";
     $("pwForm").reset(); $("pwMsg").textContent = ""; $("pwMsg").className = "err";
     sett.hidden = false;
+    OWNED = []; drawBadges();
+    fetch(DB.replace(/\/$/, "") + "/badges/" + encodeURIComponent(session.name) + ".json")
+      .then(function (r) { return r.json(); })
+      .then(function (d) { OWNED = d ? Object.keys(d) : []; drawBadges(); }).catch(function () {});
   }
   $("settBtn").addEventListener("click", openSettings);
   $("settX").addEventListener("click", function () { sett.hidden = true; });
@@ -673,15 +735,111 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   $("walX").addEventListener("click", function () { wallet.hidden = true; });
 
   /* ---------- owner panel (shown only for the account named 123) ---------- */
-  function ownerOpen(o) { $("owner").hidden = !o; body.classList.toggle("owner-open", o); }
+  function ownerOpen(o) {
+    $("owner").hidden = !o; body.classList.toggle("owner-open", o);
+    if (o && isOwner()) { loadStats(); loadMuted(); }
+  }
   function ownerSync() {
     var on = !!session && session.name === "123", p = $("owner");
     $("ownerBtn").hidden = !on;
+    if (typeof msgs !== "undefined" && msgs) render();
     if (!on) { delete p.dataset.seen; ownerOpen(false); return; }
     if (!p.dataset.seen) { p.dataset.seen = "1"; if (window.innerWidth >= 900) ownerOpen(true); }
   }
   $("ownerBtn").addEventListener("click", function () { ownerOpen($("owner").hidden); });
   $("ownerX").addEventListener("click", function () { ownerOpen(false); });
+
+  /* ---------- owner tools (Firebase Rules decide who is really allowed) ---------- */
+  var OWNER = "123";
+  function isOwner() { return !!session && session.name === OWNER; }
+  function say2(t) { $("oMsg").textContent = t; }
+  function odb(method, path, body, query) {
+    if (!isOwner()) return Promise.reject(new Error("denied"));
+    return token().then(function (tok) {
+      return fetch(DB.replace(/\/$/, "") + "/" + path + ".json?" + (query ? query + "&" : "") + "auth=" + encodeURIComponent(tok),
+        { method: method, body: body === undefined ? undefined : JSON.stringify(body) });
+    }).then(function (r) {
+      if (!r.ok) throw new Error(r.status === 401 || r.status === 403 ? "denied" : "failed");
+      return r.json();
+    });
+  }
+  function oerr(e) { say2(e.message === "denied" ? "Permission denied. Publish the new Rules in Firebase first." : "Something went wrong. Try again."); }
+  function count(o) { return o ? Object.keys(o).length : 0; }
+
+  function loadStats() {
+    $("oStats").textContent = "Loading\u2026";
+    Promise.all([odb("GET", "users", undefined, "shallow=true"), odb("GET", "messages", undefined, "shallow=true"), odb("GET", "muted", undefined, "shallow=true")])
+      .then(function (r) {
+        $("oStats").innerHTML = "<span>Users</span><b>" + count(r[0]) + "</b><span>Messages</span><b>" + count(r[1]) + "</b><span>Muted</span><b>" + count(r[2]) + "</b>";
+      }).catch(function (e) { $("oStats").textContent = "\u2014"; oerr(e); });
+  }
+  $("oRefresh").addEventListener("click", function () { loadStats(); loadMuted(); });
+
+  $("oAnnPost").addEventListener("click", function () {
+    var t = $("oAnn").value.trim().slice(0, 200);
+    if (!t) { say2("Type a message first."); return; }
+    odb("PUT", "announcement", t).then(function () { say2("Announcement posted."); }).catch(oerr);
+  });
+  $("oAnnClear").addEventListener("click", function () {
+    odb("DELETE", "announcement").then(function () { $("oAnn").value = ""; say2("Announcement cleared."); }).catch(oerr);
+  });
+
+  function loadMuted() {
+    odb("GET", "muted").then(function (d) {
+      var box = $("oMuted"); box.textContent = "";
+      Object.keys(d || {}).forEach(function (n) {
+        var row = hel("div", "oitem"), b = hel("button", null, "Unmute");
+        b.type = "button";
+        b.addEventListener("click", function () { odb("DELETE", "muted/" + encodeURIComponent(n)).then(function () { say2(n + " can chat again."); loadMuted(); }).catch(oerr); });
+        row.appendChild(hel("span", null, n)); row.appendChild(b); box.appendChild(row);
+      });
+    }).catch(oerr);
+  }
+  $("oMuteBtn").addEventListener("click", function () {
+    var n = $("oMute").value.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,16}$/.test(n)) { say2("Enter a valid username."); return; }
+    if (n === OWNER) { say2("You can\u2019t mute yourself."); return; }
+    odb("PUT", "muted/" + n, true).then(function () { $("oMute").value = ""; say2(n + " is muted."); loadMuted(); }).catch(oerr);
+  });
+  $("oClear").addEventListener("click", function () {
+    if (!window.confirm("Delete every message in the chat? This can\u2019t be undone.")) return;
+    odb("DELETE", "messages").then(function () { say2("Chat cleared."); loadStats(); }).catch(oerr);
+  });
+  list.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".mdel") : null;
+    if (!b || !isOwner()) return;
+    odb("DELETE", "messages/" + encodeURIComponent(b.dataset.k)).catch(function () { statusEl.textContent = "delete failed"; });
+  });
+
+  BADGES.forEach(function (b) { var o = document.createElement("option"); o.textContent = b[0]; $("oBadge").appendChild(o); });
+  function badgeAct(give) {
+    var n = $("oUser").value.trim().toLowerCase(), b = $("oBadge").value;
+    if (!/^[a-z0-9_]{3,16}$/.test(n)) { say2("Enter a valid username."); return; }
+    var p = "badges/" + n + "/" + encodeURIComponent(b);
+    (give ? odb("PUT", p, true) : odb("DELETE", p)).then(function () {
+      say2((give ? "Gave " : "Removed ") + b + (give ? " to " : " from ") + n + ".");
+      loadBadgeMap();
+    }).catch(oerr);
+  }
+  $("oGrant").addEventListener("click", function () { badgeAct(true); });
+  $("oRevoke").addEventListener("click", function () { badgeAct(false); });
+  $("oLoadUsers").addEventListener("click", function () {
+    odb("GET", "users").then(function (d) {
+      var box = $("oUsers"); box.textContent = "";
+      var arr = Object.keys(d || {}).map(function (k) { return d[k]; }).filter(function (u) { return u && typeof u.username === "string"; })
+        .sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+      if (!arr.length) { box.appendChild(hel("div", "oitem", "No users yet.")); return; }
+      arr.forEach(function (u) {
+        var row = hel("div", "oitem"), info = hel("span"), pick = hel("button", null, "Pick");
+        info.appendChild(document.createTextNode(u.username));
+        info.appendChild(hel("small", null, (typeof u.ts === "number" ? "Joined " + new Date(u.ts).toLocaleDateString("en-US") : "Joined \u2014")));
+        if (u.ltc) info.appendChild(hel("small", null, String(u.ltc)));
+        pick.type = "button";
+        pick.addEventListener("click", function () { $("oUser").value = u.username; $("oMute").value = u.username; });
+        row.appendChild(info); row.appendChild(pick); box.appendChild(row);
+      });
+    }).catch(oerr);
+  });
   $("copyAddr").addEventListener("click", function () {
     var b = this;
     function done(t) { b.textContent = t; setTimeout(function () { b.textContent = "Copy"; }, 1500); }
@@ -845,6 +1003,8 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
         var head = document.createElement("div"), nm = document.createElement("span");
         head.className = "mhead"; nm.className = "mname"; nm.textContent = name; nm.style.color = tint(name);
         head.appendChild(nm);
+        var tb = topBadge(name);
+        if (tb) { var bg = document.createElement("span"); bg.className = "mbadge"; bg.textContent = tb[0]; bg.style.background = tb[1]; head.appendChild(bg); }
         if (typeof m.ts === "number") {
           var tm = document.createElement("span");
           tm.className = "mtime";
@@ -855,6 +1015,11 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       }
       var tx = document.createElement("div");
       tx.className = "mtext"; tx.textContent = m.text.slice(0, 200);
+      if (isOwner()) {
+        var del = document.createElement("button");
+        del.type = "button"; del.className = "mdel"; del.dataset.k = k; del.setAttribute("aria-label", "Delete message"); del.textContent = "\u00d7";
+        tx.appendChild(del);
+      }
       body.appendChild(tx); row.appendChild(body); list.appendChild(row);
     });
     if (stick) list.scrollTop = list.scrollHeight;
@@ -876,6 +1041,26 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     render();
   }
   es.addEventListener("put", onEvent); es.addEventListener("patch", onEvent);
+
+  var badgeMap = {};
+  function topBadge(name) {
+    var owned = badgeMap[name], best = null;
+    if (!owned) return null;
+    BADGES.forEach(function (b) { if (owned[b[0]]) best = b; });
+    return best;
+  }
+  function loadBadgeMap() {
+    fetch(base + "/badges.json").then(function (r) { return r.json(); })
+      .then(function (d) { badgeMap = d || {}; render(); }).catch(function () {});
+  }
+  loadBadgeMap(); setInterval(loadBadgeMap, 60000);
+
+  var ann = new EventSource(base + "/announcement.json");
+  ann.addEventListener("put", function (e) {
+    var p; try { p = JSON.parse(e.data); } catch (x) { return; }
+    var t = p && typeof p.data === "string" ? p.data : "", el = $("announce");
+    el.textContent = t; el.hidden = !t;
+  });
 
   var last = 0;
   form.addEventListener("submit", function (e) {
