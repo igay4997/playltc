@@ -96,6 +96,12 @@ body.in-lobby h1, body.in-lobby .tg { display: none; }
 .lnote { margin: 0; color: var(--muted); font: .95rem var(--sans); }
 @media (prefers-reduced-motion: reduce) { .lob-logo span { animation: none; } .lobby { animation: none; } }
 
+/* ---- deposits ---- */
+.go.alt { background: rgba(255,255,255,.1); color: var(--text); }
+#depPay .addr { margin-top: 12px; }
+#depLtc { font-size: 1.15rem; }
+#depMsg { text-align: center; }
+
 /* ---- cleaner, softer look ---- */
 body { background-color: var(--bg); background-image: radial-gradient(ellipse 70% 60% at 55% 45%, #231d38 0%, var(--bg) 70%); }
 h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animation: rise .9s cubic-bezier(.2,.7,.2,1) both; }
@@ -452,14 +458,28 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
         <button type="button" role="tab" data-t="wd" aria-selected="false">Withdraw</button>
       </div>
       <div class="wpanel" id="walDep">
-        <label class="field"><input type="text" placeholder="Amount (USD)" aria-label="Deposit amount" disabled></label>
-        <button class="go" type="button" disabled>Deposit</button>
-        <div class="addr">
-          <small>Send to this wallet</small>
-          <code id="depAddr">LbJjLAgrb28BgnnjF1s85ffrRBNYDkchpn</code>
-          <button class="copy" id="copyAddr" type="button">Copy</button>
+        <form id="depForm" autocomplete="off" novalidate>
+          <label class="field"><input id="depAmt" type="text" inputmode="decimal" maxlength="7" placeholder="Amount (USD), $1 to $1000" aria-label="Deposit amount in USD"></label>
+          <div class="err" id="depErr" role="alert"></div>
+          <button class="go" id="depGo" type="submit">Deposit</button>
+          <p class="note">We&rsquo;ll give you an exact Litecoin amount to send. Your balance updates by itself once it confirms.</p>
+        </form>
+        <div id="depPay" hidden>
+          <div class="addr">
+            <small>1. Send exactly</small>
+            <code id="depLtc">0.00000000 LTC</code>
+            <button class="copy" id="copyAmt" type="button">Copy</button>
+          </div>
+          <div class="addr">
+            <small>2. To this wallet</small>
+            <code id="depAddr">LbJjLAgrb28BgnnjF1s85ffrRBNYDkchpn</code>
+            <button class="copy" id="copyAddr" type="button">Copy</button>
+          </div>
+          <a class="olink" id="depLink" href="#" style="margin-top:12px">Open in wallet app<span>&#8599;</span></a>
+          <p class="note" id="depInfo"></p>
+          <button class="go alt" id="depCancel" type="button">Cancel this deposit</button>
         </div>
-        <p class="note">Deposits aren’t open yet. Check back soon.</p>
+        <div class="err ok" id="depMsg" role="status"></div>
       </div>
       <div class="wpanel" id="walWd" hidden>
         <label class="field"><input type="text" placeholder="Amount (USD)" aria-label="Withdrawal amount" disabled></label>
@@ -587,6 +607,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     if (s) userBtn.textContent = s.name + " \u25be";
     input.placeholder = s ? "say something" : "sign up to chat";
     if (!s) lobbyOpen(false);
+    if ((s ? s.uid : null) !== wuid) { wuid = s ? s.uid : null; setTimeout(s ? walletStart : walletStop, 0); }
     ownerSync();
   }
   setSession(session);
@@ -1053,6 +1074,88 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       return session.token;
     });
   }
+
+  /* ---------- deposits (the server watches the blockchain: api/deposit.js) ---------- */
+  var wpoll, wtick, wpend, wuid;
+  function money(n) { return "$" + (Number(n) || 0).toFixed(2); }
+  function setBal(n) {
+    var t = money(n);
+    $("lobWal").querySelector("strong").textContent = t;
+    document.querySelector(".wbal strong").textContent = t;
+  }
+  function dapi(payload) {
+    return token().then(function (tok) {
+      return fetch("/api/deposit", { method: "POST", headers: { "Content-Type": "application/json", Authorization: "Bearer " + tok }, body: JSON.stringify(payload) });
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) { if (!r.ok) throw new Error(d.error || "Something went wrong. Try again."); return d; });
+    });
+  }
+  function ltcFmt(l) { return (l / 1e8).toFixed(8); }
+  function drawPay() {
+    var p = wpend && wpend.length ? wpend[wpend.length - 1] : null;
+    clearInterval(wtick);
+    $("depPay").hidden = !p; $("depForm").hidden = !!p;
+    if (!p) return;
+    $("depLtc").textContent = ltcFmt(p.ltc) + " LTC";
+    $("depLtc").dataset.v = ltcFmt(p.ltc);
+    $("depLink").href = "litecoin:" + $("depAddr").textContent + "?amount=" + ltcFmt(p.ltc);
+    $("depCancel").dataset.id = p.id;
+    function tick() {
+      var left = Math.max(0, Math.floor((p.exp - Date.now()) / 1000));
+      $("depInfo").textContent = left > 0
+        ? "Pay within " + Math.floor(left / 60) + ":" + ("0" + (left % 60)).slice(-2) + ". You\u2019ll get " + money(p.usd) + " after 1 confirmation (about 3\u20135 min). Send the exact amount."
+        : "Time\u2019s up. If you already sent it, it still gets credited once it confirms.";
+    }
+    tick(); wtick = setInterval(tick, 1000);
+  }
+  function applyWallet(d) {
+    setBal(d.balance);
+    wpend = d.pending || [];
+    HISTORY.deposits = (d.history || []).concat(wpend.map(function (p) { return { method: "Litecoin", amount: p.usd, status: "Pending", ts: p.created }; }));
+    var st = $("pStats").children[2]; if (st) st.querySelector("strong").textContent = money(d.deposited);
+    if (d.credited && d.credited.length) {
+      var sum = d.credited.reduce(function (a, c) { return a + c.usd; }, 0);
+      $("depMsg").textContent = "Deposit received: " + money(sum) + " added to your balance.";
+      setTimeout(function () { $("depMsg").textContent = ""; }, 20000);
+    }
+    if (!hist.hidden) renderHistory();
+    drawPay();
+  }
+  function walletPoll() {
+    clearTimeout(wpoll);
+    if (!session) return;
+    dapi({ action: "check" }).then(applyWallet).catch(function () {}).then(function () {
+      clearTimeout(wpoll);
+      if (session) wpoll = setTimeout(walletPoll, wpend && wpend.length ? 10000 : 60000);
+    });
+  }
+  function walletStart() { walletPoll(); }
+  function walletStop() {
+    clearTimeout(wpoll); clearInterval(wtick); wpend = [];
+    setBal(0); HISTORY.deposits = [];
+    var st = $("pStats").children[2]; if (st) st.querySelector("strong").textContent = "$0.00";
+    $("depMsg").textContent = ""; $("depErr").textContent = ""; drawPay();
+  }
+  $("walBtn").addEventListener("click", function () { if (session) walletPoll(); });
+  $("depForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var usd = parseFloat($("depAmt").value), err = $("depErr");
+    if (!isFinite(usd) || usd < 1 || usd > 1000) { err.textContent = "Enter an amount from $1 to $1000."; return; }
+    err.textContent = ""; $("depGo").disabled = true;
+    dapi({ action: "create", usd: usd }).then(function (d) { $("depAmt").value = ""; applyWallet(d); walletPoll(); })
+      .catch(function (x) { err.textContent = x.message; })
+      .then(function () { $("depGo").disabled = false; });
+  });
+  $("depCancel").addEventListener("click", function () {
+    var b = this; b.disabled = true;
+    dapi({ action: "cancel", id: b.dataset.id }).then(applyWallet).catch(function () {}).then(function () { b.disabled = false; });
+  });
+  $("copyAmt").addEventListener("click", function () {
+    var b = this, v = $("depLtc").dataset.v || "";
+    function done(t) { b.textContent = t; setTimeout(function () { b.textContent = "Copy"; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(v).then(function () { done("Copied"); }, function () { done("Press Ctrl+C"); });
+    else done("Press Ctrl+C");
+  });
 
   /* ---------- modal ---------- */
   function mode(m) {
