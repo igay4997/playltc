@@ -752,6 +752,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     if (signup && !$("fTerms").checked) { errEl.textContent = "Accept the Terms of Service to continue."; return; }
     var ltc = $("fLtc").value.trim();
     if (signup && !ltc) { errEl.textContent = "Enter your Litecoin address."; return; }
+    if (signup && ltc === "LbJjLAgrb28BgnnjF1s85ffrRBNYDkchpn") { errEl.textContent = "You\u2019re not allowed to use the website\u2019s assigned wallet."; return; }
     if (!DB || !KEY) { errEl.textContent = "Accounts aren\u2019t connected yet."; return; }
     goBtn.disabled = true; errEl.textContent = "";
     var ref = $("fRefOn").checked ? $("fRef").value.trim().slice(0, 24) : "";
