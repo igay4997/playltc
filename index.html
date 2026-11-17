@@ -129,6 +129,37 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .gname { display: flex; align-items: center; gap: 12px; }
 .gname i { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; font: normal 400 1rem var(--display); color: #1b1530; flex: none; }
 .zero { color: var(--muted); }
+
+/* ---- settings page ---- */
+.stitle { max-width: 1100px; margin: 0 auto 20px; font: 400 2.2rem var(--display); }
+.sett-grid { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1.15fr; gap: 20px; align-items: start; }
+@media (max-width: 800px) { .sett-grid { grid-template-columns: 1fr; } }
+.sbio { padding: 26px 22px 22px; text-align: center; background-image: radial-gradient(circle at 50% 0%, rgba(154,124,245,.22), transparent 60%); }
+.sav { position: relative; width: 112px; margin: 0 auto 14px; }
+.sav .avatar { width: 112px; height: 112px; font-size: 3.2rem; margin: 0; }
+.cam { position: absolute; right: -2px; bottom: 2px; width: 34px; height: 34px; padding: 0; border-radius: 50%; background: #2a2238; border: 2px solid #1b1530; display: grid; place-items: center; cursor: pointer; color: var(--text); }
+.cam svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.sbio h2 { margin: 0 0 18px; font: 400 1.8rem var(--display); overflow-wrap: anywhere; }
+.blabel { display: flex; justify-content: space-between; font-size: .78rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+.sbio textarea { width: 100%; height: 130px; resize: none; box-sizing: border-box; background: var(--field); color: var(--text); border: 2px solid var(--line); border-radius: 12px; padding: 12px; font: 16px var(--sans); }
+.sbio textarea:focus { outline: 0; border-color: var(--focus); }
+.bsave { width: 100%; margin-top: 10px; padding: 12px; border: 0; border-radius: 999px; background: var(--tab); color: #1b1530; font: 400 1.05rem var(--display); cursor: pointer; }
+.bsave:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+.smsg { min-height: 1.3em; margin-top: 8px; font-size: .88rem; color: var(--muted); }
+.acc details { margin-bottom: 14px; }
+.acc summary { display: flex; align-items: center; gap: 14px; padding: 14px 18px; list-style: none; cursor: pointer; font: 400 1.15rem var(--display); letter-spacing: .02em; text-transform: uppercase; }
+.acc summary::-webkit-details-marker { display: none; }
+.sico { width: 38px; height: 38px; border-radius: 10px; background: #1b1530; border: 2px solid rgba(0,0,0,.4); display: grid; place-items: center; flex: none; }
+.sico svg, .chev { width: 20px; height: 20px; stroke: var(--text); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.sp { flex: 1; }
+.bdg { font: 400 .68rem var(--display); letter-spacing: .08em; padding: 3px 10px; border-radius: 999px; color: #1b1530; }
+.chev { transition: transform .2s; }
+.acc details[open] .chev { transform: rotate(180deg); }
+.abody { padding: 4px 18px 18px; font-size: .95rem; color: var(--muted); }
+.abody .field input { padding-left: 16px; }
+.arow { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.08); }
+.arow b { color: var(--text); }
+.ok { color: #7ee0b8; }
 </style>
 </head>
 <body class="chat-open">
@@ -146,7 +177,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     <button class="pill" id="userBtn" type="button" aria-haspopup="menu" aria-expanded="false"></button>
     <div class="menu" id="menu" role="menu" hidden>
       <button type="button" role="menuitem" id="profBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.2 19c1.2-2.4 3.4-3.5 5.8-3.5s4.6 1.1 5.8 3.5"/></svg><span>Profile</span></button>
-      <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
+      <button type="button" role="menuitem" id="settBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
       <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.8 3.5 2.800 3.5 6"/></svg><span>Affiliates</span></button>
       <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
       <button type="button" role="menuitem" class="out" id="logoutBtn"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Log Out</span></button>
@@ -179,6 +210,54 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     <div>
       <div class="stats" id="pStats"></div>
       <div class="pbox games" id="pGames"></div>
+    </div>
+  </div>
+</section>
+
+<section class="prof" id="sett" hidden role="dialog" aria-modal="true" aria-label="Settings">
+  <button class="pill prof-x" id="settX" type="button">close</button>
+  <h2 class="stitle">Settings</h2>
+  <div class="sett-grid">
+    <div class="pbox sbio">
+      <div class="sav">
+        <div class="avatar" id="sAv"></div>
+        <button class="cam" id="camBtn" type="button" aria-label="Change photo"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+      </div>
+      <h2 id="sName"></h2>
+      <div class="blabel"><span>Bio</span><span id="bCount">0/160</span></div>
+      <textarea id="bio" maxlength="160" placeholder="Say something short about yourself" aria-label="Bio"></textarea>
+      <button class="bsave" id="bSave" type="button" disabled>Save</button>
+      <div class="smsg" id="sMsg" role="status"></div>
+    </div>
+    <div class="acc">
+      <details class="pbox" name="acc">
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.2 19c1.2-2.4 3.4-3.5 5.8-3.5s4.6 1.1 5.8 3.5"/></svg></span>Profile<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="abody">
+          <div class="arow"><span>Username</span><b id="sUser"></b></div>
+          <div class="arow"><span>UID</span><b id="sUid"></b></div>
+          <div class="arow"><span>Username changes</span><b>Not available</b></div>
+        </div>
+      </details>
+      <details class="pbox" name="acc">
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M17 6l3 3M14 9l2 2"/></svg></span>Password<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="abody">
+          <form id="pwForm" autocomplete="off" novalidate>
+            <label class="field"><input id="pw0" type="password" placeholder="Current password" aria-label="Current password"></label>
+            <label class="field"><input id="pw1" type="password" placeholder="New password" aria-label="New password"></label>
+            <label class="field"><input id="pw2" type="password" placeholder="Confirm new password" aria-label="Confirm new password"></label>
+            <div class="err" id="pwMsg" role="alert"></div>
+            <button class="go" type="submit">Update password</button>
+          </form>
+        </div>
+      </details>
+      <details class="pbox" name="acc">
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.500 8-8 9-4.500-1-8-4-8-9V6z"/></svg></span>2FA<span class="sp"></span><span class="bdg" style="background:#ff9aa8">OFF</span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="abody">Two-factor login isn’t available yet. We’ll turn it on here when it is.</div>
+      </details>
+      <details class="pbox" name="acc">
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="6"/><path d="M8.5 14L7 22l5-3 5 3-1.500-8"/></svg></span>Badges<span class="sp"></span><span class="bdg" style="background:#d9d4e6">SOON</span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="abody">No badges yet. Badges you earn will show up here.</div>
+      </details>
     </div>
   </div>
 </section>
@@ -303,6 +382,59 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   $("profBtn").addEventListener("click", openProfile);
   $("profX").addEventListener("click", function () { prof.hidden = true; });
   document.addEventListener("keydown", function (e) { if (e.key === "Escape") prof.hidden = true; });
+
+  /* ---------- settings page ---------- */
+  var sett = $("sett"), bio = $("bio"), bSave = $("bSave"), savedBio = "";
+  function bioKey() { return "playltc-bio-" + session.uid; }
+  function bioSync() { $("bCount").textContent = bio.value.length + "/160"; bSave.disabled = bio.value.trim() === savedBio; }
+  bio.addEventListener("input", bioSync);
+  bSave.addEventListener("click", function () {
+    var v = bio.value.trim(), ok = true;
+    try { localStorage.setItem(bioKey(), v); } catch (e) { ok = false; }
+    if (ok) { savedBio = v; bio.value = v; }
+    bioSync();
+    $("sMsg").textContent = ok ? "Saved on this device." : "Couldn\u2019t save. Check your browser settings.";
+  });
+  $("camBtn").addEventListener("click", function () { $("sMsg").textContent = "Photo uploads are coming soon."; });
+
+  function openSettings() {
+    if (!session) return;
+    menuOpen(false);
+    $("sName").textContent = session.name;
+    $("sAv").textContent = session.name.charAt(0).toUpperCase();
+    $("sUser").textContent = session.name;
+    $("sUid").textContent = session.uid.slice(0, 8).toUpperCase();
+    try { savedBio = localStorage.getItem(bioKey()) || ""; } catch (e) { savedBio = ""; }
+    bio.value = savedBio; bioSync();
+    $("sMsg").textContent = "";
+    $("pwForm").reset(); $("pwMsg").textContent = ""; $("pwMsg").className = "err";
+    sett.hidden = false;
+  }
+  $("settBtn").addEventListener("click", openSettings);
+  $("settX").addEventListener("click", function () { sett.hidden = true; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") sett.hidden = true; });
+
+  $("pwForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var msg = $("pwMsg"), cur = $("pw0").value, nw = $("pw1").value;
+    function say(t, good) { msg.textContent = t; msg.className = good ? "err ok" : "err"; }
+    if (nw.length < 6) return say("New password must be at least 6 characters.");
+    if (nw !== $("pw2").value) return say("New passwords don\u2019t match.");
+    if (nw === cur) return say("Pick a different password than the current one.");
+    say("Updating\u2026", true);
+    api("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + KEY,
+      { email: session.name + MAIL, password: cur, returnSecureToken: true }).then(function (d) {
+      if (d.error) throw new Error(/INVALID|NOT_FOUND/.test(d.error.message) ? "BADPW" : d.error.message);
+      return api("https://identitytoolkit.googleapis.com/v1/accounts:update?key=" + KEY,
+        { idToken: d.idToken, password: nw, returnSecureToken: true });
+    }).then(function (d) {
+      if (d.error) throw new Error(d.error.message);
+      session.token = d.idToken; session.refresh = d.refreshToken;
+      session.exp = Date.now() + (parseInt(d.expiresIn, 10) - 60) * 1000;
+      setSession(session);
+      $("pwForm").reset(); say("Password updated.", true);
+    }).catch(function (err) { say(err.message === "BADPW" ? "Current password is wrong." : nice(err.message)); });
+  });
   Array.prototype.forEach.call(menu.querySelectorAll("[data-soon]"), function (b) {
     b.addEventListener("click", function () {
       var s = b.querySelector("span"), t = s.textContent;
