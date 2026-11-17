@@ -160,6 +160,30 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .arow { display: flex; justify-content: space-between; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.08); }
 .arow b { color: var(--text); }
 .ok { color: #7ee0b8; }
+
+/* ---- history page ---- */
+.htools { max-width: 1100px; margin: 0 auto 16px; display: flex; justify-content: space-between; gap: 12px; }
+.sel { appearance: none; -webkit-appearance: none; background-color: var(--panel); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23efe9f7' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 18px; color: var(--text); border: 0; border-radius: 12px; padding: 11px 40px 11px 16px; font: 700 .95rem var(--sans); cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+.sel option { background: #221a36; color: #efe9f7; }
+.hbox { max-width: 1100px; margin: 0 auto; overflow-x: auto; }
+.hrow { display: grid; align-items: center; gap: 8px; min-width: 620px; padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,.06); font-weight: 600; }
+.hrow:last-child { border-bottom: 0; }
+.hrow > :not(:first-child) { text-align: right; color: var(--muted); }
+.hrow > .w { color: var(--text); }
+.hrow > .win { color: #7ee0b8; font-weight: 700; }
+.hrow.h { background: #352a4d; padding: 16px 20px; font: 400 .85rem var(--display); text-transform: uppercase; }
+.hrow.h > * { color: var(--text); }
+.res { justify-self: end; padding: 3px 12px; border-radius: 999px; font-size: .78rem; }
+.res.win { background: rgba(126,224,184,.16); color: #7ee0b8; }
+.res.loss { background: rgba(255,154,168,.14); color: #ff9aa8; }
+.hrow > .completed { color: #7ee0b8; }
+.hrow > .pending { color: var(--tab); }
+.hrow > .failed { color: #ff9aa8; }
+.hmsg { padding: 44px 20px; text-align: center; color: var(--muted); }
+.pager { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 18px; }
+.pager button { min-width: 34px; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: rgba(255,255,255,.07); color: var(--text); font: 400 .85rem var(--display); cursor: pointer; }
+.pager button:disabled { opacity: .4; cursor: not-allowed; }
+.pager .cur { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--tab); color: #1b1530; font: 400 .9rem var(--display); }
 </style>
 </head>
 <body class="chat-open">
@@ -179,7 +203,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       <button type="button" role="menuitem" id="profBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M6.2 19c1.2-2.4 3.4-3.5 5.8-3.5s4.6 1.1 5.8 3.5"/></svg><span>Profile</span></button>
       <button type="button" role="menuitem" id="settBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Settings</span></button>
       <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.8 3.5 2.800 3.5 6"/></svg><span>Affiliates</span></button>
-      <button type="button" role="menuitem" data-soon><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
+      <button type="button" role="menuitem" id="histBtn"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg><span>History</span></button>
       <button type="button" role="menuitem" class="out" id="logoutBtn"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Log Out</span></button>
     </div>
   </div>
@@ -260,6 +284,17 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       </details>
     </div>
   </div>
+</section>
+
+<section class="prof" id="hist" hidden role="dialog" aria-modal="true" aria-label="History">
+  <button class="pill prof-x" id="histX" type="button">close</button>
+  <h2 class="stitle">History</h2>
+  <div class="htools">
+    <select class="sel" id="hKind" aria-label="History type"><option value="games">Games</option><option value="deposits">Deposits</option></select>
+    <select class="sel" id="hSize" aria-label="Rows per page"><option>15</option><option>25</option><option>50</option></select>
+  </div>
+  <div class="pbox hbox"><div id="hTable"></div></div>
+  <div class="pager" id="hPager"></div>
 </section>
 
 <div class="overlay" id="overlay" hidden>
@@ -435,6 +470,68 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       $("pwForm").reset(); say("Password updated.", true);
     }).catch(function (err) { say(err.message === "BADPW" ? "Current password is wrong." : nice(err.message)); });
   });
+
+  /* ---------- history page ---------- */
+  // Nothing has been played or deposited yet, so both lists are empty.
+  // Add entries in this shape and the page fills in (newest first is automatic):
+  //   games:    { game: "Mines", bet: 0.10, multi: 3.03, payout: 0.30, ts: 1763058180000 }
+  //   deposits: { method: "Litecoin", amount: 5, status: "Completed", ts: 1763058180000 }
+  var HISTORY = { games: [], deposits: [] };
+  var hist = $("hist"), hKind = $("hKind"), hSize = $("hSize"), hPage = 1;
+  function hel(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function usd2(n) { return "$" + Number(n).toFixed(2); }
+  function when(ts) { return new Date(ts).toLocaleString("en-US", { month: "numeric", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" }); }
+
+  function renderHistory() {
+    var kind = hKind.value, size = parseInt(hSize.value, 10);
+    var rows = HISTORY[kind].slice().sort(function (a, b) { return b.ts - a.ts; });
+    var pages = Math.max(1, Math.ceil(rows.length / size));
+    if (hPage > pages) hPage = pages;
+    var games = kind === "games";
+    var cols = games ? "1.3fr .7fr .7fr .8fr .7fr 1.5fr" : "1.4fr 1fr 1fr 1.5fr";
+    var box = $("hTable"); box.textContent = "";
+    var head = hel("div", "hrow h"); head.style.gridTemplateColumns = cols;
+    (games ? ["Game", "Bet", "Multi", "Payout", "Result", "Date"] : ["Method", "Amount", "Status", "Date"]).forEach(function (t) { head.appendChild(hel("span", null, t)); });
+    box.appendChild(head);
+    if (!rows.length) box.appendChild(hel("div", "hmsg", games ? "No games played yet." : "No deposits yet."));
+    rows.slice((hPage - 1) * size, hPage * size).forEach(function (r) {
+      var row = hel("div", "hrow"); row.style.gridTemplateColumns = cols;
+      if (games) {
+        var win = r.multi >= 1, color = "#b0acbd";
+        GAMES.forEach(function (g) { if (g[0] === r.game) color = g[1]; });
+        var name = hel("span", "gname"), tile = hel("i", null, String(r.game).charAt(0));
+        tile.style.background = color; name.appendChild(tile); name.appendChild(document.createTextNode(r.game));
+        row.appendChild(name);
+        row.appendChild(hel("span", "w", usd2(r.bet)));
+        row.appendChild(hel("span", null, Number(r.multi).toFixed(2) + "x"));
+        row.appendChild(hel("span", win ? "win" : "w", usd2(r.payout)));
+        row.appendChild(hel("span", "res " + (win ? "win" : "loss"), win ? "Win" : "Loss"));
+      } else {
+        row.appendChild(hel("span", "w", r.method));
+        row.appendChild(hel("span", "w", usd2(r.amount)));
+        row.appendChild(hel("span", String(r.status).toLowerCase(), r.status));
+      }
+      row.appendChild(hel("span", null, when(r.ts)));
+      box.appendChild(row);
+    });
+    var pg = $("hPager"); pg.textContent = "";
+    function pb(label, to, off) {
+      var b = hel("button", null, label); b.type = "button"; b.disabled = off;
+      b.addEventListener("click", function () { hPage = to; renderHistory(); });
+      pg.appendChild(b);
+    }
+    pb("First", 1, hPage === 1); pb("\u2039", hPage - 1, hPage === 1);
+    pg.appendChild(hel("span", "cur", String(hPage)));
+    pb("\u203a", hPage + 1, hPage === pages); pb("Last", pages, hPage === pages);
+  }
+  hKind.addEventListener("change", function () { hPage = 1; renderHistory(); });
+  hSize.addEventListener("change", function () { hPage = 1; renderHistory(); });
+  $("histBtn").addEventListener("click", function () {
+    if (!session) return;
+    menuOpen(false); hPage = 1; renderHistory(); hist.hidden = false;
+  });
+  $("histX").addEventListener("click", function () { hist.hidden = true; });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") hist.hidden = true; });
   Array.prototype.forEach.call(menu.querySelectorAll("[data-soon]"), function (b) {
     b.addEventListener("click", function () {
       var s = b.querySelector("span"), t = s.textContent;
