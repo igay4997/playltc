@@ -203,6 +203,20 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 .mbadge { padding: 1px 8px; border-radius: 999px; font: 400 .62rem var(--display); letter-spacing: .06em; text-transform: uppercase; color: #1b1530; }
 .mdel { margin-left: 8px; padding: 0 4px; background: none; border: 0; color: #ff8a8a; font-weight: 700; cursor: pointer; opacity: .45; }
 .msg:hover .mdel { opacity: 1; }
+.ohead { display: flex; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.08); background: linear-gradient(180deg, rgba(255,59,59,.16), transparent); }
+.olog { width: 40px; height: 40px; flex: none; fill: var(--ink); stroke: var(--ink); transform: rotate(-4deg); filter: drop-shadow(0 4px 12px rgba(255,59,59,.35)); }
+.ohead strong { display: block; font: 400 1.3rem var(--display); letter-spacing: .01em; }
+.ohead small { color: var(--muted); font-size: .75rem; }
+.ohead button { margin-left: auto; background: none; border: 0; color: var(--text); font-size: 1.4rem; line-height: 1; cursor: pointer; opacity: .7; }
+.ohead button:hover { opacity: 1; }
+.owner .sico { width: 30px; height: 30px; border-radius: 9px; }
+.owner .sico svg { width: 16px; height: 16px; }
+.owner .pbox { background: rgba(34,26,54,.8); }
+.olabel { color: var(--muted); font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 10px 0 2px; }
+.obtns { display: flex; gap: 6px; flex: none; }
+.olink { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; margin-bottom: 6px; background: var(--field); border: 1px solid var(--line); border-radius: 10px; color: var(--text); text-decoration: none; font-weight: 600; font-size: .9rem; }
+.olink:hover { border-color: var(--focus); }
+.olink span { color: var(--muted); }
 
 /* ---- history page ---- */
 .htools { max-width: 1100px; margin: 0 auto 16px; display: flex; justify-content: space-between; gap: 12px; }
@@ -414,42 +428,52 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
 </section>
 
 <aside class="owner" id="owner" hidden aria-label="Owner panel">
-  <div class="chat-head"><div>owner panel</div><button id="ownerX" type="button" aria-label="Close owner panel">&times;</button></div>
+  <div class="ohead"><svg class="olog" viewBox="0 0 64 64" aria-hidden="true"><rect x="6" y="12" width="12" height="44" rx="6"/><circle cx="26" cy="28" r="13" fill="none" stroke-width="10"/><rect x="49" y="6" width="12" height="50" rx="6"/></svg><div><strong>Owner panel</strong><small>playltc.wtf &middot; private</small></div><button id="ownerX" type="button" aria-label="Close owner panel">&times;</button></div>
   <div class="owner-body">
     <p class="onote">Only you can see this panel.</p>
     <div class="acc">
       <details class="pbox" name="oacc" open>
-        <summary>Overview</summary>
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></span>Overview<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="abody">
           <div class="ostats" id="oStats">Loading…</div>
+          <div class="olist" id="oNew"></div>
           <button class="obtn ghost" id="oRefresh" type="button">Refresh</button>
         </div>
       </details>
       <details class="pbox" name="oacc">
-        <summary>Announcement</summary>
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><path d="M3 11v2a1 1 0 0 0 1 1h3l8 4V6L7 10H4a1 1 0 0 0-1 1z"/><path d="M18 9a4 4 0 0 1 0 6"/></svg></span>Announcement<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="abody">
           <input class="oin" id="oAnn" maxlength="200" placeholder="Message everyone will see" aria-label="Announcement">
           <div class="orowb"><button class="obtn" id="oAnnPost" type="button">Post</button><button class="obtn ghost" id="oAnnClear" type="button">Clear</button></div>
         </div>
       </details>
       <details class="pbox" name="oacc">
-        <summary>Chat moderation</summary>
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>Chat moderation<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="abody">
           <p class="onote">Click the × next to any message in the chat to delete it.</p>
           <input class="oin" id="oMute" maxlength="16" placeholder="Username to mute" aria-label="Username to mute">
-          <div class="orowb"><button class="obtn" id="oMuteBtn" type="button">Mute</button></div>
+          <div class="orowb"><button class="obtn" id="oMuteBtn" type="button">Mute</button><button class="obtn ghost" id="oPurge" type="button">Delete their messages</button></div>
           <div class="olist" id="oMuted"></div>
           <button class="obtn danger" id="oClear" type="button">Clear all messages</button>
         </div>
       </details>
       <details class="pbox" name="oacc">
-        <summary>Users &amp; badges</summary>
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14c2.2.8 3.5 2.8 3.5 6"/></svg></span>Users &amp; badges<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
         <div class="abody">
           <input class="oin" id="oUser" maxlength="16" placeholder="Username" aria-label="Username">
           <select class="oin" id="oBadge" aria-label="Badge"></select>
           <div class="orowb"><button class="obtn" id="oGrant" type="button">Give</button><button class="obtn ghost" id="oRevoke" type="button">Remove</button></div>
-          <button class="obtn ghost" id="oLoadUsers" type="button">Show all users</button>
+          <input class="oin" id="oFind" placeholder="Search users" aria-label="Search users">
+          <div class="orowb"><button class="obtn ghost" id="oLoadUsers" type="button">Show users</button><button class="obtn ghost" id="oCsv" type="button">Download CSV</button></div>
           <div class="olist" id="oUsers"></div>
+        </div>
+      </details>
+      <details class="pbox" name="oacc">
+        <summary><span class="sico"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span>Links<span class="sp"></span><svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary>
+        <div class="abody">
+          <a class="olink" href="https://console.firebase.google.com/project/playltcwtf/overview" target="_blank" rel="noopener">Firebase<span>&#8599;</span></a>
+          <a class="olink" href="https://vercel.com/dashboard" target="_blank" rel="noopener">Vercel<span>&#8599;</span></a>
+          <a class="olink" href="https://github.com/igay4997/playltc" target="_blank" rel="noopener">GitHub repo<span>&#8599;</span></a>
         </div>
       </details>
     </div>
@@ -766,11 +790,25 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   function oerr(e) { say2(e.message === "denied" ? "Permission denied. Publish the new Rules in Firebase first." : "Something went wrong. Try again."); }
   function count(o) { return o ? Object.keys(o).length : 0; }
 
+  function newestUsers(d) {
+    return Object.keys(d || {}).map(function (k) { return d[k]; }).filter(function (u) { return u && typeof u.username === "string"; })
+      .sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
+  }
   function loadStats() {
     $("oStats").textContent = "Loading\u2026";
-    Promise.all([odb("GET", "users", undefined, "shallow=true"), odb("GET", "messages", undefined, "shallow=true"), odb("GET", "muted", undefined, "shallow=true")])
+    Promise.all([odb("GET", "users"), odb("GET", "messages", undefined, "shallow=true"), odb("GET", "muted", undefined, "shallow=true")])
       .then(function (r) {
-        $("oStats").innerHTML = "<span>Users</span><b>" + count(r[0]) + "</b><span>Messages</span><b>" + count(r[1]) + "</b><span>Muted</span><b>" + count(r[2]) + "</b>";
+        var us = newestUsers(r[0]);
+        $("oStats").innerHTML = "<span>Users</span><b>" + us.length + "</b><span>Messages</span><b>" + count(r[1]) + "</b><span>Muted</span><b>" + count(r[2]) + "</b>";
+        var box = $("oNew"); box.textContent = "";
+        if (us.length) box.appendChild(hel("div", "olabel", "Newest users"));
+        us.slice(0, 5).forEach(function (u) {
+          var row = hel("div", "oitem"), info = hel("span");
+          info.appendChild(document.createTextNode(u.username));
+          info.appendChild(hel("small", null, typeof u.ts === "number" ? when(u.ts) : ""));
+          row.appendChild(info); box.appendChild(row);
+        });
+        if (typeof annText === "string" && !$("oAnn").value) $("oAnn").value = annText;
       }).catch(function (e) { $("oStats").textContent = "\u2014"; oerr(e); });
   }
   $("oRefresh").addEventListener("click", function () { loadStats(); loadMuted(); });
@@ -823,22 +861,58 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   }
   $("oGrant").addEventListener("click", function () { badgeAct(true); });
   $("oRevoke").addEventListener("click", function () { badgeAct(false); });
+  var userCache = [];
+  function copyText(t) { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).catch(function () {}); }
+  function showUsers() {
+    var q = $("oFind").value.trim().toLowerCase(), box = $("oUsers"); box.textContent = "";
+    var arr = userCache.filter(function (u) { return !q || u.username.toLowerCase().indexOf(q) > -1 || String(u.ltc || "").toLowerCase().indexOf(q) > -1; });
+    if (!arr.length) { box.appendChild(hel("div", "oitem", "No users found.")); return; }
+    arr.forEach(function (u) {
+      var row = hel("div", "oitem"), info = hel("span"), btns = hel("span", "obtns"), pick = hel("button", null, "Pick");
+      info.appendChild(document.createTextNode(u.username));
+      info.appendChild(hel("small", null, typeof u.ts === "number" ? "Joined " + new Date(u.ts).toLocaleDateString("en-US") : "Joined \u2014"));
+      if (u.ltc) info.appendChild(hel("small", null, String(u.ltc)));
+      pick.type = "button";
+      pick.addEventListener("click", function () { $("oUser").value = u.username; $("oMute").value = u.username; say2("Picked " + u.username + "."); });
+      btns.appendChild(pick);
+      if (u.ltc) {
+        var cp = hel("button", null, "Copy"); cp.type = "button";
+        cp.addEventListener("click", function () { copyText(String(u.ltc)); say2("Address copied."); });
+        btns.appendChild(cp);
+      }
+      row.appendChild(info); row.appendChild(btns); box.appendChild(row);
+    });
+  }
   $("oLoadUsers").addEventListener("click", function () {
+    odb("GET", "users").then(function (d) { userCache = newestUsers(d); showUsers(); }).catch(oerr);
+  });
+  $("oFind").addEventListener("input", showUsers);
+  $("oCsv").addEventListener("click", function () {
     odb("GET", "users").then(function (d) {
-      var box = $("oUsers"); box.textContent = "";
-      var arr = Object.keys(d || {}).map(function (k) { return d[k]; }).filter(function (u) { return u && typeof u.username === "string"; })
-        .sort(function (a, b) { return (b.ts || 0) - (a.ts || 0); });
-      if (!arr.length) { box.appendChild(hel("div", "oitem", "No users yet.")); return; }
-      arr.forEach(function (u) {
-        var row = hel("div", "oitem"), info = hel("span"), pick = hel("button", null, "Pick");
-        info.appendChild(document.createTextNode(u.username));
-        info.appendChild(hel("small", null, (typeof u.ts === "number" ? "Joined " + new Date(u.ts).toLocaleDateString("en-US") : "Joined \u2014")));
-        if (u.ltc) info.appendChild(hel("small", null, String(u.ltc)));
-        pick.type = "button";
-        pick.addEventListener("click", function () { $("oUser").value = u.username; $("oMute").value = u.username; });
-        row.appendChild(info); row.appendChild(pick); box.appendChild(row);
-      });
+      var list2 = newestUsers(d);
+      var rows = [["username", "joined", "litecoin_address", "referral"]].concat(list2.map(function (u) {
+        return [u.username, typeof u.ts === "number" ? new Date(u.ts).toISOString() : "", u.ltc || "", u.referral || ""];
+      }));
+      var csv = rows.map(function (r) {
+        return r.map(function (c) {
+          var t = String(c);
+          if (/^[=+\-@]/.test(t)) t = "'" + t;
+          return '"' + t.replace(/"/g, '""') + '"';
+        }).join(",");
+      }).join("\n");
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+      a.download = "playltc-users.csv";
+      document.body.appendChild(a); a.click(); a.remove();
+      say2("Downloaded " + list2.length + " users.");
     }).catch(oerr);
+  });
+  $("oPurge").addEventListener("click", function () {
+    var n = $("oMute").value.trim().toLowerCase(), patch = {}, c = 0;
+    if (!/^[a-z0-9_]{3,16}$/.test(n)) { say2("Enter a valid username."); return; }
+    Object.keys(msgs || {}).forEach(function (k) { if (msgs[k].name === n) { patch[k] = null; c++; } });
+    if (!c) { say2("No recent messages from " + n + "."); return; }
+    odb("PATCH", "messages", patch).then(function () { say2("Deleted " + c + " message" + (c === 1 ? "" : "s") + " from " + n + "."); }).catch(oerr);
   });
   $("copyAddr").addEventListener("click", function () {
     var b = this;
@@ -1055,11 +1129,12 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   }
   loadBadgeMap(); setInterval(loadBadgeMap, 60000);
 
+  var annText = "";
   var ann = new EventSource(base + "/announcement.json");
   ann.addEventListener("put", function (e) {
     var p; try { p = JSON.parse(e.data); } catch (x) { return; }
     var t = p && typeof p.data === "string" ? p.data : "", el = $("announce");
-    el.textContent = t; el.hidden = !t;
+    annText = t; el.textContent = t; el.hidden = !t;
   });
 
   var last = 0;
