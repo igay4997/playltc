@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>playltc</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #161320;
+  --ink: #ffd04d;
+  --ink-deep: #e8a92a;
+  --ripple: rgba(255, 208, 77, 0.35);
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  color-scheme: dark;
+}
+:root:not([data-theme="light"]) { --bg: #161320; --ink: #ffd04d; }
+:root[data-theme="dark"] { --bg: #161320; --ink: #ffd04d; }
+html { scroll-padding-top: env(safe-area-inset-top, 0px); height: 100%; }
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+h1 {
+  margin: 0;
+  font-family: "Lilita One", "Chewy", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+  font-weight: 400;
+  font-size: clamp(3.5rem, 15vw, 9rem);
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  transform: rotate(-2deg);
+  display: flex;
+  text-shadow: 0 6px 0 rgba(0, 0, 0, 0.35);
+  user-select: none;
+  position: relative;
+  z-index: 2;
+}
+h1 span {
+  display: inline-block;
+  animation: bob 3.2s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.38s);
+  will-change: transform;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(0deg) scaleY(1); }
+  25% { transform: translateY(-0.12em) rotate(-3deg); }
+  50% { transform: translateY(0.03em) rotate(0deg); }
+  75% { transform: translateY(0.12em) rotate(3deg); }
+}
+.ring {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  border: 3px solid var(--ripple);
+  pointer-events: none;
+  animation: ripple 2.4s cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+  z-index: 1;
+}
+@keyframes ripple {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(38); opacity: 0; border-width: 0.5px; }
+}
+.ring.slow { animation-duration: 3.4s; }
+.dot {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border-radius: 50%;
+  background: rgba(255, 208, 77, 0.16);
+  pointer-events: none;
+  z-index: 0;
+  animation: splash 2.2s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
+}
+@keyframes splash {
+  0% { transform: scale(0); opacity: 0; }
+  12% { opacity: 1; }
+  100% { transform: scale(var(--max, 8)); opacity: 0; }
+}
+.ring.big { animation-name: ripple-big; }
+@keyframes ripple-big {
+  from { transform: scale(1); opacity: 1; }
+  to { transform: scale(var(--max, 20)); opacity: 0; border-width: 0.5px; }
+}
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 8px; }
+@media (prefers-reduced-motion: reduce) {
+  h1 span { animation: none; }
+  .ring, .dot { display: none; }
+}
+</style>
+</head>
+<body>
+<h1 id="logo" aria-label="playltc"></h1>
+
+<script>
+(function () {
+  var word = "playltc";
+  var logo = document.getElementById("logo");
+  word.split("").forEach(function (ch, i) {
+    var s = document.createElement("span");
+    s.textContent = ch;
+    s.style.setProperty("--i", i);
+    s.setAttribute("aria-hidden", "true");
+    logo.appendChild(s);
+  });
+
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function ring(x, y, slow) {
+    if (reduce) return;
+    var r = document.createElement("div");
+    r.className = "ring" + (slow ? " slow" : "");
+    r.style.left = x + "px";
+    r.style.top = y + "px";
+    document.body.appendChild(r);
+    setTimeout(function () { r.remove(); }, 3600);
+  }
+
+  document.addEventListener("pointerdown", function (e) {
+    ring(e.clientX, e.clientY);
+    setTimeout(function () { ring(e.clientX, e.clientY); }, 240);
+  });
+
+  // random circle splashes anywhere on the screen
+  function splash(x, y) {
+    if (reduce) return;
+    var max = 6 + Math.random() * 10;
+    var d = document.createElement("div");
+    d.className = "dot";
+    d.style.left = x + "px";
+    d.style.top = y + "px";
+    d.style.setProperty("--max", max);
+    document.body.appendChild(d);
+
+    var n = 1 + Math.floor(Math.random() * 2);
+    for (var k = 0; k < n; k++) {
+      (function (k) {
+        setTimeout(function () {
+          var r = document.createElement("div");
+          r.className = "ring big";
+          r.style.left = x + "px";
+          r.style.top = y + "px";
+          r.style.setProperty("--max", max * (2.2 + k * 0.8));
+          document.body.appendChild(r);
+          setTimeout(function () { r.remove(); }, 2600);
+        }, 140 + k * 220);
+      })(k);
+    }
+    setTimeout(function () { d.remove(); }, 2400);
+  }
+
+  function randomSplash() {
+    var pad = 40;
+    splash(
+      pad + Math.random() * (window.innerWidth - pad * 2),
+      pad + Math.random() * (window.innerHeight - pad * 2)
+    );
+    setTimeout(randomSplash, 500 + Math.random() * 1300);
+  }
+
+})();
+</script>
+</body>
+</html>
