@@ -559,7 +559,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       <label class="field"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><input id="fUser" placeholder="Username" maxlength="16" autocapitalize="off" aria-label="Username"></label>
       <label class="field"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><input id="fPass" type="password" placeholder="Password" aria-label="Password"><button class="eye" type="button" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></label>
       <label class="field su"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg><input id="fPass2" type="password" placeholder="Confirm password" aria-label="Confirm password"><button class="eye" type="button" aria-label="Show password"><svg viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></label>
-      <label class="field su"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/></svg><input id="fLtc" placeholder="Your Litecoin address" maxlength="100" autocapitalize="off" spellcheck="false" aria-label="Your Litecoin address"></label>
+      <label class="field su"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/></svg><input id="fLtc" placeholder="Your Litecoin or Solana address" maxlength="100" autocapitalize="off" spellcheck="false" aria-label="Your Litecoin or Solana address"></label>
       <label class="check su"><input id="fRefOn" type="checkbox">Referral Code (Optional)</label>
       <label class="field su" id="refField" hidden><input id="fRef" placeholder="coming soon" maxlength="24" aria-label="Referral code (coming soon)" disabled></label>
       <label class="check su"><input id="fTerms" type="checkbox">I accept the <u>Terms of Service</u></label>
@@ -1016,7 +1016,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
   $("oCsv").addEventListener("click", function () {
     odb("GET", "users").then(function (d) {
       var list2 = newestUsers(d);
-      var rows = [["username", "joined", "litecoin_address", "referral"]].concat(list2.map(function (u) {
+      var rows = [["username", "joined", "wallet_address", "referral"]].concat(list2.map(function (u) {
         return [u.username, typeof u.ts === "number" ? new Date(u.ts).toISOString() : "", u.ltc || "", u.referral || ""];
       }));
       var csv = rows.map(function (r) {
@@ -1220,6 +1220,19 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
       .then(function (h) { return crypto.subtle.digest("SHA-256", h); })
       .then(function (h) { var x = new Uint8Array(h); for (var k = 0; k < 4; k++) if (x[k] !== bytes[21 + k]) return false; return true; });
   }
+  // Solana addresses are base58 text that decodes to exactly 32 bytes (no checksum).
+  function solOk(a) {
+    var A = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", bytes = [], i, j, c;
+    if (a.length < 32 || a.length > 44) return false;
+    for (i = 0; i < a.length; i++) {
+      c = A.indexOf(a.charAt(i)); if (c < 0) return false;
+      for (j = 0; j < bytes.length; j++) { c += bytes[j] * 58; bytes[j] = c & 255; c >>= 8; }
+      while (c) { bytes.push(c & 255); c >>= 8; }
+    }
+    for (i = 0; i < a.length && a.charAt(i) === "1"; i++) bytes.push(0);
+    return bytes.length === 32;
+  }
+  function validWallet(a) { return validLtc(a).then(function (ok) { return ok || solOk(a); }); }
   function validLtc(a) {
     if (/^ltc1/i.test(a)) return Promise.resolve(a === a.toLowerCase() || a === a.toUpperCase() ? bech32ok(a.toLowerCase()) : false);
     if (/^[LM]/.test(a)) return b58ok(a);
@@ -1244,12 +1257,12 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
     if (signup && p !== $("fPass2").value) { errEl.textContent = "Passwords don\u2019t match."; return; }
     if (signup && !$("fTerms").checked) { errEl.textContent = "Accept the Terms of Service to continue."; return; }
     var ltc = $("fLtc").value.trim();
-    if (signup && !ltc) { errEl.textContent = "Enter your Litecoin address."; return; }
+    if (signup && !ltc) { errEl.textContent = "Enter your Litecoin or Solana address."; return; }
     if (signup && ltc === "LbJjLAgrb28BgnnjF1s85ffrRBNYDkchpn") { errEl.textContent = "You\u2019re not allowed to use the website\u2019s assigned wallet."; return; }
     if (!DB || !KEY) { errEl.textContent = "Accounts aren\u2019t connected yet."; return; }
     goBtn.disabled = true; errEl.textContent = "";
     var ref = $("fRefOn").checked ? $("fRef").value.trim().slice(0, 24) : "";
-    (signup ? validLtc(ltc) : Promise.resolve(true)).then(function (ok) {
+    (signup ? validWallet(ltc) : Promise.resolve(true)).then(function (ok) {
       if (!ok) throw new Error("BADLTC");
       return api("https://identitytoolkit.googleapis.com/v1/accounts:" + (signup ? "signUp" : "signInWithPassword") + "?key=" + KEY,
         { email: u + MAIL, password: p, returnSecureToken: true });
@@ -1262,7 +1275,7 @@ h1 { text-shadow: 0 4px 0 rgba(0,0,0,.28), 0 0 60px rgba(255,59,59,.18); animati
         method: "PUT", body: JSON.stringify({ username: u, referral: ref, ltc: ltc, ts: { ".sv": "timestamp" } })
       });
     }).then(function () { closeModal(); input.focus(); })
-      .catch(function (err) { errEl.textContent = err.message === "BADLTC" ? "That doesn\u2019t look like a valid Litecoin address. Check it and try again." : nice(err.message); })
+      .catch(function (err) { errEl.textContent = err.message === "BADLTC" ? "That doesn\u2019t look like a valid Litecoin or Solana address. Check it and try again." : nice(err.message); })
       .then(function () { goBtn.disabled = false; });
   });
 
